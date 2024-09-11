@@ -1,0 +1,380 @@
+<%- include ('../layoutsAdmin/adminheader') %>
+ <%- include ('../layoutsAdmin/adminSideBarhead') %>
+
+<div class="main-panel">
+  <div class="content-wrapper">
+
+    <div class="page-header pt-5">
+      <h3 class="page-title">
+        <span class="page-title-icon btn-gradient-primary text-white mr-2">
+          <i class="mdi mdi-tag-multiple"></i>
+        </span>
+        Category
+      </h3>
+    <!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb">
+  <ul class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+      <button id="addCategoryModalBtn" class="btn-custom" onclick="location.href='/admin/addCategory'" data-toggle="modal" data-target="#addCategoryModal">
+        <i class="mdi mdi-plus"></i> Add Category
+      </button>
+    </li>
+  </ul>
+</nav>
+
+      <form class="d-flex">
+        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search" value="<%= searchQuery %>"/>
+        <button class="btn-sm gradient-btn" type="submit">Search</button>
+    </form>
+    </div>
+
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+
+          <!-- Table -->
+          <table id="" class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Category Name</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (categoryData.length > 0) { %>
+                <% categoryData.forEach((category, index) => { %>
+                  <tr>
+                    <td><%= (currentPage - 1) * 5 + index + 1 %></td>
+                    <td><%= category.categoryName %></td>
+                    <td><%= category.status %></td>
+                    <td>
+                      <button class="btn-sm gradient-btn edit-btn" data-id="<%= category._id %>" data-name="<%= category.categoryName %>">Edit</button>
+                      <% if (category.status === "active") { %>
+                        <form class="status-form" action="/admin/unlistCategory?id=<%= category._id %>" method="post" style="display:inline;">
+                          <input type="hidden" name="id" value="<%= category._id %>">
+                          <button type="submit" class="btn-sm btn-danger status-btn" data-status="Inactive" style="width: 100px;">Unlist</button>
+                        </form>
+                      <% } else { %>
+                        <form class="status-form" action="/admin/listCategory?id=<%= category._id %>" method="post" style="display:inline;">
+                          <input type="hidden" name="id" value="<%= category._id %>">
+                          <button type="submit" class="btn-sm btn-success status-btn" data-status="Active" style="width: 100px;">List</button>
+                        </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+    
+                  <td colspan="4" class="text-center">No such category found
+                    <div class="mt-4">
+                      <a href="/admin/category" class="btn-sm btn-inverse-dark" style="text-decoration: none;">Go Back</a>
+                  </div>
+                  </td>
+        
+              <% } %>
+            </tbody>
+          </table>
+          
+          <!-- Pagination Container -->
+          <div class="pagination-container mt-4">
+            <ul class="pagination justify-content-center">
+              <% if (currentPage > 1) { %>
+                <li class="page-item">
+                  <a class="page-link page-link-custom" href="?page=<%= currentPage - 1 %>&search=<%= searchQuery %>" style="background-color: #fff; border-color: #000; color: #000;">Previous</a>
+                </li>
+              <% } %>
+              <% for(let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" style="border-color: #000;">
+                  <a class="page-link page-link-custom <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" href="?page=<%= i %>&search=<%= searchQuery %>" style="border-color: #000;"><%= i %></a>
+                </li>
+              <% } %>
+              <% if (currentPage < totalPages) { %>
+                <li class="page-item">
+                  <a class="page-link page-link-custom" href="?page=<%= currentPage + 1 %>&search=<%= searchQuery %>" style="background-color: #fff; border-color: #000; color: #000;">Next</a>
+                </li>
+              <% } %>
+            </ul>
+          </div>
+          
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- content-wrapper ends -->
+</div>
+<!-- main-panel ends -->
+
+ <%- include ('../layoutsAdmin/adminfooter') %>
+ <%- include ('../layoutsAdmin/adminSideBarfooter') %>
+
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="editCategoryForm" >
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="categoryName">Category Name</label>
+            <input type="hidden" id="editCategoryId" name="id">
+            <input type="text" class="form-control" id="editCategoryName" name="name" required>
+            <div id="nameValidationMsg" style="display: none; color: red; font-size: small;">Please enter a valid category name.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Include Bootstrap JS, jQuery, and SweetAlert2 -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+<!-- DataTables JavaScript -->
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+<style>
+  .table th,
+  .table td {
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .table th,
+  .table td:nth-child(1) {
+    width: 10%;
+  }
+
+  .table th,
+  .table td:nth-child(2) {
+    width: 20%;
+  }
+
+  .table th,
+  .table td:nth-child(3) {
+    width: 20%;
+  }
+
+  .table th,
+  .table td:nth-child(4) {
+    width: 30%;
+  }
+  .swal2-popup {
+    font-size: 14px;
+    max-width: 320px;
+    padding: 1.16rem;
+    max-height: 300px !important;
+  }
+
+  .swal2-title {
+    font-size: 15px !important; 
+  }
+
+  .swal2-content {
+    font-size: 12px !important;
+  }
+
+  .swal2-confirm,
+  .swal2-cancel {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  .swal2-icon.swal2-warning {
+    font-size: 10px;
+  }
+
+  .gradient-btn {
+    width: 100px;
+    background: linear-gradient(45deg, #FFBA00, #FF6C00);
+    border: none;
+    color: white;
+    text-align: center;
+    cursor: pointer;
+  }
+  /* Breadcrumb Navigation */
+.breadcrumb {
+    background: #f8f9fa; /* Light background color */
+    border-radius: 0.375rem; /* Rounded corners */
+    padding: 1rem 1.5rem; /* Padding */
+    margin-bottom: 1rem; /* Space below breadcrumb */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.breadcrumb-item {
+    font-size: 1rem; /* Font size for breadcrumb items */
+    color: #6c757d; /* Text color */
+}
+
+.breadcrumb-item.active {
+    color: #000; /* Color for the active item */
+    font-weight: bold; /* Bold font for active item */
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/"; /* Separator */
+    padding: 0 0.5rem; /* Padding around separator */
+    color: #6c757d; /* Color for separator */
+}
+
+/* Add Category Button */
+.btn-custom {
+    background: #007bff; /* Blue background color */
+    color: #fff; /* White text color */
+    border: none; /* No border */
+    border-radius: 0.375rem; /* Rounded corners */
+    padding: 0.75rem 1.5rem; /* Padding */
+    font-size: 1rem; /* Font size */
+    font-weight: 600; /* Bold font */
+    transition: all 0.3s ease; /* Smooth transition */
+    display: flex; /* Flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    cursor: pointer; /* Pointer cursor */
+    position: relative; /* Position relative for pseudo-element */
+    overflow: hidden; /* Hide overflowing content */
+}
+
+.btn-custom i {
+    margin-right: 0.5rem; /* Space between icon and text */
+}
+
+.btn-custom:hover {
+    background: #0056b3; /* Darker blue on hover */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+    transform: scale(1.05); /* Slight zoom on hover */
+}
+
+.btn-custom:focus, .btn-custom:active {
+    box-shadow: none; /* Remove shadow on focus/active */
+    outline: none; /* Remove outline */
+}
+
+.btn-custom::before {
+    content: ''; /* Empty content for pseudo-element */
+    position: absolute; /* Absolute position */
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    width: 300%; /* Large width for effect */
+    height: 300%; /* Large height for effect */
+    background: rgba(255, 255, 255, 0.2); /* Light overlay */
+    border-radius: 50%; /* Circular shape */
+    transition: all 0.6s ease; /* Smooth transition */
+    transform: translate(-50%, -50%) scale(0); /* Initial state */
+    z-index: 0; /* Behind text */
+}
+
+.btn-custom:hover::before {
+    transform: translate(-50%, -50%) scale(1); /* Scale effect on hover */
+}
+
+.btn-custom span {
+    position: relative; /* Position text above pseudo-element */
+    z-index: 1; /* Above pseudo-element */
+}
+
+</style>
+
+<script>
+  $(document).ready(function() {
+    $('#categoryTable').DataTable(); 
+    
+    $('.edit-btn').click(function() {
+      var categoryId = $(this).data('id');
+      var categoryName = $(this).data('name');
+      $('#editCategoryId').val(categoryId);
+      $('#editCategoryName').val(categoryName);
+      $('#editCategoryModal').modal('show');
+    });
+
+    $('#addCategoryModalBtn').click(function() {
+      $('#addCategoryModal').modal('show');
+    });
+
+    $('#editCategoryForm').submit(function(event) {
+      event.preventDefault(); // Prevent form submission
+
+      var categoryId = $('#editCategoryId').val();
+      var categoryName = $('#editCategoryName').val().trim();
+
+      // Validate the category name
+      var isValidName = /^[a-zA-Z0-9\s\-]{3,}$/.test(categoryName);
+      if (!isValidName) {
+        $('#nameValidationMsg').show();
+        return;
+      } else {
+        $('#nameValidationMsg').hide();
+      }
+
+      // AJAX request to check if the category name already exists
+      $.ajax({
+        url: '/admin/editCategory', // Route to check the category name
+        method: 'POST',
+        data: { id: categoryId, name: categoryName },
+        success: function(response) {
+          if (response.exists) {
+            
+            $('#nameValidationMsg').text('Category name already exists.').show();
+          } else {
+            // If the name does not exist, submit the form
+            $('#editCategoryForm').unbind('submit').submit();
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Error checking category name:', error);
+        }
+      });
+    });
+
+    $('.status-btn').click(function(event) {
+      event.preventDefault();
+      
+      var form = $(this).closest('form');
+      var status = $(this).data('status');
+      var categoryId = form.find('input[name="id"]').val();
+      Swal.fire({
+        title: 'Are you sure?',
+        text: `Make this category as ${status}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, do it!',
+        cancelButtonText: 'No, cancel!',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.post('/admin/' + (status === 'Active' ? 'listCategory' : 'unlistCategory'), { id: categoryId })
+            .then(function(response) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Category status updated successfully!',
+              }).then(() => {
+                window.location.reload();
+              });
+            })
+            .catch(function(error) {
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'An error occurred while updating category status!',
+              });
+              console.error(error);
+            });
+        }
+      });
+    });
+  });
+</script>

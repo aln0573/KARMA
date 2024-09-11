@@ -1,0 +1,208 @@
+<%- include("../layouts/header.ejs") %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.3/dist/sweetalert2.min.css">
+    <style>
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .otp-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            text-align: center;
+        }
+        .otp-header {
+            background: #ff9800;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        .otp-inputs {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .otp-input {
+            width: 3rem;
+            padding: 0.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        .resend-link {
+            display: block;
+            margin-top: 1rem;
+            color: grey;
+            pointer-events: none;
+        }
+        .resend-link.enabled {
+            color: #007bff;
+            pointer-events: auto;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="otp-container">
+    <div class="otp-box">
+        <div class="otp-header">
+            <h4>Verify OTP</h4>
+        </div>
+        <p>Please enter the OTP sent to your email</p>
+        <form id="otpForm">
+            <div class="otp-inputs">
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+            </div>
+            <button type="submit" class="btn btn-warning btn-block">Verify</button>
+        </form>
+        <a href="#" id="resendLink" class="resend-link" onclick="resendOTP(event)">Not received your code? Resend code after <span id="timer">30</span> seconds</a>
+
+        <div class="footer-links">
+            <a href="#">Contact Us</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Privacy Policy</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.3/dist/sweetalert2.all.min.js"></script>
+<script>
+    document.getElementById('otpForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const otpInputs = document.querySelectorAll('.otp-input');
+        let otp = '';
+        otpInputs.forEach(input => {
+            otp += input.value;
+        });
+        const data = new URLSearchParams();
+        data.append('otp', otp);
+        try {
+            const response = await fetch('/verify-otp', {
+                method: 'POST',
+                body: data,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+            const result = await response.json();
+            if (result.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'OTP verified successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: result.message || 'Invalid OTP. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred. Please try again later.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+
+    const timerSpan = document.getElementById('timer');
+    const resendLink = document.getElementById('resendLink');
+    let timerDuration = 30; // Set initial timer duration to 30 seconds
+    let timerInterval;
+
+    function startTimer() {
+        timerSpan.textContent = timerDuration; // Display the initial timer value
+        resendLink.classList.remove('enabled'); // Disable the resend link initially
+
+        timerInterval = setInterval(() => {
+            timerDuration--;
+            timerSpan.textContent = timerDuration;
+
+            if (timerDuration <= 0) {
+                clearInterval(timerInterval);
+                resendLink.classList.add('enabled'); // Enable the resend link when timer ends
+            }
+        }, 1000);
+    }
+
+    async function resendOTP(event) {
+        event.preventDefault(); // Prevent default link behavior
+        if (!resendLink.classList.contains('enabled')) return;
+
+        try {
+            const response = await fetch('/resend-otp', { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'OTP resent successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+                timerDuration = 30; // Reset timer
+                startTimer(); // Restart the timer
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to resend OTP. Please try again later.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred. Please try again later.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
+
+    startTimer(); // Start the timer when the page loads
+
+    // Auto-focus on next input
+    document.querySelectorAll('.otp-input').forEach((input, index, array) => {
+        input.addEventListener('input', () => {
+            if (input.value.length === 1 && index < array.length - 1) {
+                array[index + 1].focus();
+            }
+        });
+    });
+</script>
+</body>
+</html>
+<%- include("../layouts/footer.ejs") %>

@@ -1,0 +1,363 @@
+<%- include('../layoutsAdmin/adminheader') %>
+<%- include('../layoutsAdmin/adminSideBarhead') %>
+
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="page-header pt-5">
+            <h3 class="page-title">
+                <span class="page-title-icon btn-gradient-primary text-white mr-2">
+                    <i class="mdi mdi-sale menu-icon"></i>
+                </span> Product Offer
+            </h3>
+            <nav aria-label="breadcrumb">
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <button class="btn btn-gradient-primary add-offer-btn" data-toggle="modal" data-target="#addOfferModal">Add Offer</button>
+
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="col-lg-12 grid-margin stretch-card">
+            <div class="card shadow">
+                <div class="card-body table-responsive">
+                    <table class="table table-striped table-hover table-bordered rounded">
+                        <thead class="thead-dark">
+                            <tr class="text-center">
+                                <th><i class="mdi mdi-image"></i> Product Image</th>
+                                <th><i class="mdi mdi-tag"></i> Product Name</th>
+                                <th><i class="mdi mdi-percent"></i> Offer Percentage</th>
+                                <th><i class="mdi mdi-calendar"></i> Expiry Date</th>
+                                <th><i class="mdi mdi-settings"></i> Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (productOffers.length > 0) { %>
+                                <% productOffers.forEach(offer => { %>
+                                    <tr class="text-center">
+                                        <td><img src="/productimages/<%= offer.productId.image[0] %>" alt="Product Image" style="width: 75px; height: auto; border-radius: 0;"></td>
+                                        <td><%= offer.productId.productName %></td>
+                                        <td><%= offer.offerPercentage %></td>
+                                        <td><%= offer.expiryDate.toDateString() %></td>
+                                        <td>
+                                            <button class="btn-sm edit-btn" data-toggle="modal" data-target="#editOfferModal<%= offer._id %>" style="background: linear-gradient(to right, #FFBA00, #FF6C00); border: none; color: white;">Edit</button>
+
+                                            <button class="btn-sm btn-danger status-btn" onclick="deleteOffer('<%= offer._id %>')">Delete</button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Edit Offer Modal -->
+                                    <div class="modal fade" id="editOfferModal<%= offer._id %>" tabindex="-1" role="dialog" aria-labelledby="editOfferModalLabel<%= offer._id %>" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-dark text-white">
+                                                    <h5 class="modal-title" id="editOfferModalLabel<%= offer._id %>">Edit Offer</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form class="editOfferForm" id="editOfferForm<%= offer._id %>">
+                                                        <input type="hidden" name="offerId" value="<%= offer._id %>">
+                                                        <div class="form-group">
+                                                            <label for="editOfferPercentage<%= offer._id %>">Offer Percentage</label>
+                                                            <input type="number" class="form-control" id="editOfferPercentage<%= offer._id %>" name="offerPercentage" value="<%= offer.offerPercentage %>" required>
+                                                            <small id="editOfferPercentageError<%= offer._id %>" class="text-danger"></small>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="editExpiryDate<%= offer._id %>">Expiry date</label>
+                                                            <input type="date" class="form-control" id="editExpiryDate<%= offer._id %>" name="expiryDate" value="<%= offer.expiryDate.toISOString().substr(0,10) %>" required>
+                                                            <small id="editExpiryDateError<%= offer._id %>" class="text-danger"></small>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-gradient-primary">Update Offer</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="5" class="text-center">No offers found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination-container mt-4">
+                    <ul class="pagination justify-content-center">
+                        <% if (currentPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link page-link-custom" href="?page=<%= currentPage - 1 %>" style="background-color: #fff; border-color: #000000; color: #000;">Previous</a>
+                            </li>
+                        <% } %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" style="border-color: #000;">
+                                <a class="page-link page-link-custom <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" href="?page=<%= i %>" style="border-color: #000;"><%= i %></a>
+                            </li>
+                        <% } %>
+                        <% if (currentPage < totalPages) { %>
+                            <li class="page-item">
+                                <a class="page-link page-link-custom" href="?page=<%= currentPage + 1 %>" style="background-color: #fff; border-color: #000; color: #000;">Next</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Offer Modal -->
+<div class="modal fade" id="addOfferModal" tabindex="-1" role="dialog" aria-labelledby="addOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="addOfferModalLabel">Add Offer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addOfferForm" method="POST" action="/offers/add">
+                    <div class="form-group">
+                        <label for="addProductName">Product Name</label>
+                        <!-- Add the multiple attribute to allow multiple selections -->
+                        <select class="form-control" name="productIds" id="addProductName" multiple required>
+                            <option disabled>Select Products</option>
+                            <% activeProducts.forEach(product => { %>
+                                <option value="<%= product._id %>"><%= product.productName %></option>
+                            <% }) %>
+                        </select>
+                        <small id="addProductNameError" class="text-danger"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="addOfferPercentage">Offer Percentage</label>
+                        <input type="number" class="form-control" id="addOfferPercentage" name="offerPercentage" min="1" max="100" required>
+                        <small id="addOfferPercentageError" class="text-danger"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="addExpiryDate">Expiry Date</label>
+                        <input type="date" class="form-control" id="addExpiryDate" name="expiryDate" required>
+                        <small id="addExpiryDateError" class="text-danger"></small>
+                    </div>
+                    <button type="submit" class="btn btn-gradient-primary">Add Offer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<%- include('../layoutsAdmin/adminfooter') %>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    document.getElementById('addOfferForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        
+        const productId = document.getElementById('addProductName').value;
+        const offerPercentage = document.getElementById('addOfferPercentage').value;
+        const expiryDate = document.getElementById('addExpiryDate').value;
+
+        // Clear previous errors
+        document.getElementById('addProductNameError').textContent = '';
+        document.getElementById('addOfferPercentageError').textContent = '';
+        document.getElementById('addExpiryDateError').textContent = '';
+
+        // Validation
+        if (!productId) {
+            document.getElementById('addProductNameError').textContent = 'Product name is required.';
+            return;
+        }
+        if (isNaN(offerPercentage) || offerPercentage < 1 || offerPercentage > 100) {
+            Swal.fire({
+                text: 'Offer percentage should be 1-100.'
+            })
+            return;
+        }
+        
+        const today = new Date().toISOString().split('T')[0];
+        if (expiryDate < today) {
+            document.getElementById('addExpiryDateError').textContent = 'Select a date greater than current date';
+            return;
+        }
+
+        try {
+            const response = await axios.post('/admin/addProductOffer', { productId, offerPercentage, expiryDate });
+            if (response.data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Product offer added successfully',
+                });
+                location.reload();
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to add product offer',
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while adding the product offer',
+            });
+        }
+    });
+</script>
+
+
+<!-- Edit offer -->
+<script>
+    document.querySelectorAll('.editOfferForm').forEach(form => {
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const offerId = formData.get('offerId');
+            const offerPercentage = formData.get('offerPercentage');
+            const expiryDate = formData.get('expiryDate');
+
+            if (isNaN(offerPercentage) || offerPercentage < 1 || offerPercentage > 100) {
+                Swal.fire({
+                    text: 'Offer percentage should be  between 1 and 100.'
+                });
+                return;
+            }
+
+            const today = new Date().setHours(0, 0, 0, 0);
+            const expiry = new Date(expiryDate).setHours(0, 0, 0, 0);
+
+            if (expiry <= today) {
+                Swal.fire({
+                    text: 'Expiry date must be greater than today date.'
+                });
+                return;
+            }
+
+            try {
+                const response = await axios.post(`/admin/editProductOffer?offerId=${offerId}&offerPercentage=${offerPercentage}&expiryDate=${expiryDate}`);
+                if (response.data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Product offer updated successfully'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to update product offer'
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while updating the product offer'
+                });
+            }
+        });
+    });
+</script>
+
+<!-- Delete offer -->
+<script>
+    async function deleteOffer(offerId) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to delete it ?',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await axios.delete(`/admin/removeProductOffer?id=${offerId}`);
+                if (response.data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Product offer has been deleted successfully',
+                    });
+                    location.reload();
+                } else {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to delete product offer',
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'There is an error occur while deleting product offer',
+                });
+            }
+        }
+    }
+</script>
+
+ 
+<style>
+    .add-offer-btn {
+    position: relative;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(45deg, #FFBA00, #FF6C00);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+}
+
+.add-offer-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    transition: opacity 0.4s ease-in-out;
+    opacity: 0;
+}
+
+.add-offer-btn:hover {
+    background: linear-gradient(45deg, #FF6C00, #FFBA00);
+    box-shadow: 0 8px 15px rgba(255, 108, 0, 0.3);
+}
+
+.add-offer-btn:hover:before {
+    opacity: 1;
+    animation: shine 1s ease-in-out forwards;
+}
+
+@keyframes shine {
+    0% {
+        left: -100%;
+    }
+    50% {
+        left: 50%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+</style>

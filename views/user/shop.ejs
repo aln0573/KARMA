@@ -1,0 +1,319 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/nav') %>
+
+<!-- Product Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar for Category and Brand Filters -->
+            <div class="col-lg-3 mb-4">
+<!-- Category Filter -->
+<div class="bg-white p-3 rounded mt-4">
+    <h5>Categories</h5>
+    <div class="form-group">
+        <label><input type="checkbox" class="filter-category" value="*" checked> All Categories</label><br>
+        <% categories.forEach(category => { %>
+            <label><input type="checkbox" class="filter-category" value="<%= category._id.toString() %>"> <%= category.categoryName %></label><br>
+        <% }) %>
+    </div>
+</div>
+
+
+
+                <!-- Brand Filter -->
+<div class="bg-white p-3 rounded mt-4">
+    <h5>Brands</h5>
+    <div class="form-group">
+        <label><input type="checkbox" class="filter-brand" value="*" checked> All Brands</label><br>
+        <% brand.forEach(brand => { %>
+            <label><input type="checkbox" class="filter-brand" value="<%= brand._id.toString() %>"> <%= brand.brandsName %></label><br>
+        <% }) %>
+    </div>
+</div>
+
+
+                <!-- Filter Panel -->
+                <div class="panel-filter d-none mt-4">
+                    <div class="bg-light p-3 rounded">
+                        <h5>Filter by</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h6>Price</h6>
+                                <ul class="list-unstyled">
+                                    <li><a href="#" class="filter-link" data-sort="default">Default</a></li>
+                                    <li><a href="#" class="filter-link" data-sort="price-asc">Price: Low to High</a></li>
+                                    <li><a href="#" class="filter-link" data-sort="price-desc">Price: High to Low</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-12">
+                                <h6>Name</h6>
+                                <ul class="list-unstyled">
+                                    <li><a href="#" class="filter-link" data-sort="name-asc">Name [a - z]</a></li>
+                                    <li><a href="#" class="filter-link" data-sort="name-desc">Name [z - a]</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content for Products and Search -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-end align-items-center mb-4">
+                    <div>
+                        <button class="btn btn-outline-secondary me-2 js-show-filter">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                        <button class="btn btn-outline-secondary js-show-search">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                   <!-- Search Panel -->
+                               <div class="panel-search d-none mb-4">
+                                   <div class="input-group">
+                                       <input type="text" class="form-control" placeholder="Search" name="search-product" id="search-product" value="<%= searchTerm %>">
+                                       <button class="btn btn-primary" id="search-button">
+                                           <i class="bi bi-search"></i>
+                                       </button>
+                                   </div>
+                               </div>
+
+
+                <!-- Product Grid -->
+                <div class="row" id="product-grid">
+                    <% products.forEach(product => { %>
+                      <div class="col-lg-4 col-md-6 mb-4 product-item" 
+                           data-category="<%= product.category._id.toString() %>" 
+                           data-brand="<%= product.brand._id.toString() %>" 
+                           data-name="<%= product.productName %>" 
+                           data-price="<%= product.price %>">
+                        <div class="card h-100">
+                          <!-- Product Image -->
+                          <img src="/productimages/<%= product.image[0] %>" class="card-img-top product-image" id="product-<%= product._id %>" alt="<%= product.productName %>">
+                          
+                          <!-- Product Details -->
+                          <div class="card-body text-center">
+                            <h5 class="card-title"><%= product.productName %></h5>
+                            <div class="card-text">
+                              <!-- Display Price and Original Price -->
+                              <% if (product.offerPrice && product.price > product.offerPrice) { 
+                                const discountPercentage = Math.floor(((product.price - product.offerPrice) / product.price) * 100); 
+                              %>
+                                <h6>₹<%= product.offerPrice %></h6>
+                                <h6 class="text-muted"><del>₹<%= product.price %></del></h6>
+                                <h6 class="discount-badge"><%= discountPercentage %>% </h6>
+                              <% } else { %>
+                                <h6>₹<%= product.price %></h6>
+                                <h6 class="text-muted"><del>₹<%= product.originalPrice || 'N/A' %></del></h6>
+                              <% } %>
+                            </div>
+                          </div>
+                          <div class="card-footer bg-white text-center">
+                            <a href="javascript:void(0)" class="btn btn-outline-primary" onclick="addToCart('<%= product._id %>')">Add to Cart</a>
+                            <a href="/wishlist/<%= product._id %>" class="btn btn-outline-danger">Wishlist</a>
+                          </div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  </div>
+
+                <!-- Pagination Controls -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <% if (currentPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        <% } %>
+
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                            </li>
+                        <% } %>
+
+                        <% if (currentPage < totalPages) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<%- include('../layouts/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .discount-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 108, 0, 0.9);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 14px;
+      z-index: 10; 
+    }
+  </style>
+
+<script>
+function addToCart(productId) {
+    axios.post('/addcart', { productId: productId })
+        .then(function (response) {
+            console.log(response.data);
+            window.location.href = '/cart';
+        })
+        .catch(function (error) {
+            console.error('Error adding to cart:', error);
+            if (error.response && error.response.status === 400) {
+                const errorMessage = error.response.data;
+ 
+                if (errorMessage === 'Product is out of stock') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Out of Stock',
+                        text: 'This product is currently out of stock.',
+                    });
+                }
+                else if (errorMessage === 'Product already exists in cart') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Product in Cart',
+                        text: 'This product is already in your cart.',
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'There was an issue adding the product to your cart.',
+                });
+            }
+        });
+};
+$(document).ready(function () {
+    let selectedCategories = ['*'];
+    let selectedBrands = ['*'];
+    let currentSort = 'default';
+    let searchTerm = ''; 
+    $('.js-show-filter').on('click', function () {
+        $('.panel-filter').toggleClass('d-none');
+    });
+
+    $('.js-show-search').on('click', function () {
+        $('.panel-search').toggleClass('d-none');
+    });
+    $('.filter-category').on('change', function () {
+        selectedCategories = [];
+        $('.filter-category:checked').each(function () {
+            selectedCategories.push($(this).val());
+        });
+        if (selectedCategories.includes('*')) {
+            selectedCategories = ['*'];
+            $('.filter-category').prop('checked', false);
+            $('.filter-category[value="*"]').prop('checked', true);
+        }
+        filterAndSortProducts();
+    });
+    $('.filter-brand').on('change', function () {
+        selectedBrands = [];
+        $('.filter-brand:checked').each(function () {
+            selectedBrands.push($(this).val());
+        });
+        if (selectedBrands.includes('*')) {
+            selectedBrands = ['*'];
+            $('.filter-brand').prop('checked', false);
+            $('.filter-brand[value="*"]').prop('checked', true);
+        }
+        filterAndSortProducts();
+    });
+    $('.filter-link').on('click', function (e) {
+        e.preventDefault();
+        currentSort = $(this).attr('data-sort');
+        filterAndSortProducts();
+        $('.filter-link').removeClass('active');
+        $(this).addClass('active');
+    });
+    $('#search-button').on('click', function () {
+        searchTerm = $('#search-product').val().toLowerCase();
+        filterAndSortProducts();
+    });
+    $('#search-product').on('keyup', function (e) {
+        if (e.key === 'Enter') {
+            $('#search-button').click();
+        }
+    });
+    function filterAndSortProducts() {
+        $('.product-item').each(function () {
+            const productCategory = $(this).data('category');
+            const productBrand = $(this).data('brand');
+            const productName = $(this).data('name').toLowerCase();
+
+            const categoryMatch = (selectedCategories.includes('*') || selectedCategories.includes(productCategory));
+            const brandMatch = (selectedBrands.includes('*') || selectedBrands.includes(productBrand));
+            const searchMatch = searchTerm === '' || productName.includes(searchTerm);
+
+            $(this).toggle(categoryMatch && brandMatch && searchMatch);
+        });
+        sortProducts(currentSort);
+    }
+    function sortProducts(criteria) {
+        const productGrid = $('#product-grid');
+        const products = productGrid.children('.product-item').get();
+
+        products.sort(function (a, b) {
+            let comparison = 0;
+
+            switch (criteria) {
+                case 'price-asc':
+                    comparison = $(a).data('price') - $(b).data('price');
+                    break;
+                case 'price-desc':
+                    comparison = $(b).data('price') - $(a).data('price');
+                    break;
+                case 'name-asc':
+                    comparison = $(a).data('name').localeCompare($(b).data('name'));
+                    break;
+                case 'name-desc':
+                    comparison = $(b).data('name').localeCompare($(a).data('name'));
+                    break;
+                default:
+                    break;
+            }
+
+            return comparison;
+        });
+        $.each(products, function (index, product) {
+            productGrid.append(product);
+        });
+    }
+
+    document.querySelectorAll('.product-image').forEach(image => {
+        image.addEventListener('click', function () {
+            const productId = this.id.split('-')[1];
+            window.location.href = `/productDetails?productId=${productId}`;
+        });
+    });
+});
+
+</script>

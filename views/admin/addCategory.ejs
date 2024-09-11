@@ -1,0 +1,220 @@
+<%- include("../layoutsAdmin/adminheader") %>
+<%- include("../layoutsAdmin/adminSidebarhead") %>
+
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="page-header pt-5">
+            <h3 class="page-title">
+                <span class="page-title-icon btn-gradient-primary text-white mr-2">
+                    <i class="mdi mdi-store"></i>
+                </span>
+                Add Category
+            </h3>
+            <nav aria-label="breadcrumb">
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <button class="btn btn-back" onclick="location.href='/admin/category'">Go Back</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="col-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Add New Category</h4>
+                    <form id="addCategoryForm" class="forms-sample">
+                        <div class="form-group">
+                            <label for="exampleInputName1" class="pb-3">Category Name</label>
+                            <p id="errorMsg" style="display: none; color: red;">Category already exists</p>
+                            <input type="text" class="form-control" id="exampleInputName1" name="categoryName" placeholder="Enter the category Name" required />
+                            <% if (locals.message) { %>
+                                <small class="text-danger"><%= message %></small>
+                            <% } %>
+                            <div id="nameValidationMsg" style="display: none; color: red; font-size: small;">Please enter a valid category name. Only letters and spaces are allowed.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                        <button type="button" class="btn btn-secondary" onclick="cancelForm()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>  
+    </div>
+    <!-- content-wrapper ends -->
+</div>
+<!-- main-panel ends -->
+<style>
+    /* Page Header */
+.page-header {
+    margin-bottom: 2rem;
+    background: #f1f1f1;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb {
+    background: #f9f9f9;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.breadcrumb-item {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.breadcrumb-item.active {
+    color: #000;
+    font-weight: bold;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    padding: 0 0.5rem;
+    color: #6c757d;
+}
+
+/* Navigation Button */
+.btn-back {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: #5a6268;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Title */
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* Form Control */
+.form-control {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+}
+
+/* Buttons */
+.btn-primary {
+    background: #007bff;
+    border: none;
+    color: #fff;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    border: none;
+    color: #fff;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.text-danger {
+    color: red;
+}
+</style>
+
+<%- include("../layoutsAdmin/adminSideBarfooter") %>
+<%- include("../layoutsAdmin/adminfooter") %>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addCategoryForm');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const categoryNameInput = document.getElementById('exampleInputName1');
+            let categoryName = categoryNameInput.value.trim();
+            const nameValidationMsg = document.getElementById('nameValidationMsg');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!isValidCategoryName(categoryName)) {
+                nameValidationMsg.style.display = 'block';
+                nameValidationMsg.textContent = 'Please enter a valid category name. Only letters and spaces are allowed.';
+                return;
+            }
+
+            nameValidationMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            axios.post('/admin/addNewCategory', { categoryName })
+                .then(function(response) {
+                    if (response.status === 200) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.data.message
+                        });
+                        form.reset();
+                    }
+                })
+                .catch(function(error) {
+                    if (error.response && error.response.status === 400) {
+                        errorMsg.style.display = 'block';
+                        errorMsg.textContent = error.response.data.message;
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong!'
+                        });
+                    }
+                });
+        });
+
+        function isValidCategoryName(name) {
+            // Allow letters and spaces
+            return /^[a-zA-Z\s]+$/.test(name);
+        }
+    });
+
+    function cancelForm() {
+        document.getElementById('addCategoryForm').reset();
+        document.getElementById('nameValidationMsg').style.display = 'none';
+        document.getElementById('errorMsg').style.display = 'none';
+        window.location.href = '/admin/category';
+    }
+</script>

@@ -1,0 +1,380 @@
+<%- include ('../layoutsAdmin/adminheader') %>
+ <%- include ('../layoutsAdmin/adminSideBarhead') %>
+ <div class="main-panel">
+    <div class="content-wrapper">
+      <div class="page-header pt-5">
+        <h3 class="page-title">
+          <span class="page-title-icon btn-gradient-primary text-white mr-2">
+              <i class="mdi mdi-store"></i>
+            </span>  
+          Brands
+        </h3>
+        <nav aria-label="breadcrumb">
+          <ul class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">
+              <button id="addCModalBtn" class="btn btn-custom" onclick="location.href='/admin/addBrands'" data-toggle="modal" data-target="#addBrandModal">
+                <i class="mdi mdi-plus"></i> Add Brands
+              </button>
+            </li>
+          </ul>
+        </nav>
+        
+        <form class="d-flex">
+          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="search" value="<%= searchQuery %>"/>
+          <button class="btn-sm gradient-btn" type="submit">Search</button>
+        </form>
+      </div>
+
+    <div class="col-lg-12 grid-margin stretch-card">
+      <div class="card">
+        <div class="card-body">
+
+          <!-- Table -->
+          <table id="" class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Brand Name</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+                <% if (brandsData.length > 0) { %>
+                    <% brandsData.forEach((brands, index) => { %>
+                      <tr>
+                        <td><%= (currentPage - 1) * 5 + index + 1 %></td>
+                        <td><%= brands.brandsName %></td>
+                        <td><%= brands.status %></td>
+                        <td>
+                          <button class="btn-sm gradient-btn edit-btn" data-id="<%= brands._id %>" data-name="<%= brands.brandsName %>">Edit</button>
+                          <% if (brands.status === "active") { %>
+                            <form class="status-form" action="/admin/unlistBrands" method="post" style="display:inline;">
+                              <input type="hidden" name="id" value="<%= brands._id %>">
+                              <button type="submit" class="btn-sm btn-danger status-btn" data-status="Inactive" style="width: 100px;">Unlist</button>
+                            </form>
+                          <% } else { %>
+                            <form class="status-form" action="/admin/listBrands" method="post" style="display:inline;">
+                              <input type="hidden" name="id" value="<%= brands._id %>">
+                              <button type="submit" class="btn-sm btn-success status-btn" data-status="Active" style="width: 100px;">List</button>
+                            </form>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <td colspan="4" class="text-center">No such brand found
+                      <div class="mt-4">
+                        <a href="/admin/brands" class="btn-sm btn-inverse-dark" style="text-decoration: none;">Go Back</a>
+                      </div>
+                    </td>
+                  <% } %>
+                  
+            </tbody>
+          </table>
+
+             <!-- Pagination Container -->
+             <div class="pagination-container mt-4">
+                <ul class="pagination justify-content-center">
+                  <% if (currentPage > 1) { %>
+                    <li class="page-item">
+                      <a class="page-link page-link-custom" href="?page=<%= currentPage - 1 %>&search=<%= searchQuery %>" style="background-color: #fff; border-color: #000; color: #000;">Previous</a>
+                    </li>
+                  <% } %>
+                  <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" style="border-color: #000;">
+                      <a class="page-link page-link-custom <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" href="?page=<%= i %>&search=<%= searchQuery %>" style="border-color: #000;"><%= i %></a>
+                    </li>
+                  <% } %>
+                  <% if (currentPage < totalPages) { %>
+                    <li class="page-item">
+                      <a class="page-link page-link-custom" href="?page=<%= currentPage + 1 %>&search=<%= searchQuery %>" style="background-color: #fff; border-color: #000; color: #000;">Next</a>
+                    </li>
+                  <% } %>
+                </ul>
+              </div>
+              
+    
+            </div>
+          </div>
+        </div>
+    
+      </div>
+      <!-- content-wrapper ends -->
+    </div>
+    <!-- main-panel ends -->
+    
+     <%- include ('../layoutsAdmin/adminfooter') %>
+     <%- include ('../layoutsAdmin/adminSideBarfooter') %>
+
+     <!-- Edit brand Modal -->
+<div class="modal fade" id="editBrandsModal" tabindex="-1" role="dialog" aria-labelledby="editBrandsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editBrandsModalLabel">Edit Brands</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="editBrandsForm">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="brandsName">Brand Name</label>
+              <input type="hidden" id="editBrandsId" name="id">
+              <input type="text" class="form-control" id="editBrandsName" name="name" required>
+              <div id="nameValidationMsg" style="display: none; color: red; font-size: small;">Please enter a valid Brand name.</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-success">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+   <!-- Include Bootstrap JS, jQuery, and SweetAlert2 -->
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+<!-- DataTables JavaScript -->
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+
+
+<style>
+    .table th,
+    .table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+  
+    .table th,
+    .table td:nth-child(1) {
+      width: 10%;
+    }
+  
+    .table th,
+    .table td:nth-child(2) {
+      width: 20%;
+    }
+  
+    .table th,
+    .table td:nth-child(3) {
+      width: 20%;
+    }
+  
+    .table th,
+    .table td:nth-child(4) {
+      width: 30%;
+    }
+    .swal2-popup {
+      font-size: 14px;
+      max-width: 320px;
+      padding: 1.16rem;
+      max-height: 300px !important;
+    }
+  
+    .swal2-title {
+      font-size: 15px !important; 
+    }
+  
+    .swal2-content {
+      font-size: 12px !important;
+    }
+  
+    .swal2-confirm,
+    .swal2-cancel {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    .swal2-icon.swal2-warning {
+      font-size: 10px;
+    }
+  
+    .gradient-btn {
+      width: 100px;
+      background: linear-gradient(45deg, #FFBA00, #FF6C00);
+      border: none;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+    }
+    /* Breadcrumb Navigation */
+.breadcrumb {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease;
+}
+
+.breadcrumb:hover {
+    background: #e9ecef;
+}
+
+.breadcrumb-item {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.breadcrumb-item.active {
+    color: #000;
+    font-weight: bold;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    padding: 0 0.5rem;
+    color: #6c757d;
+}
+
+/* Add Brands Button */
+.btn-custom {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.4s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-custom i {
+    margin-right: 0.5rem;
+}
+
+.btn-custom:hover {
+    background: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-custom:focus, .btn-custom:active {
+    box-shadow: none;
+    outline: none;
+}
+
+.btn-custom::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 300%;
+    height: 300%;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transition: all 0.6s ease;
+    transform: translate(-50%, -50%) scale(0);
+    z-index: 0;
+}
+
+.btn-custom:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.btn-custom span {
+    position: relative;
+    z-index: 1;
+}
+
+  </style>
+  
+  <script>
+    $(document).ready(function() {
+      $('#brandsTable').DataTable(); 
+      
+      $('.edit-btn').click(function() {
+        var brandsId = $(this).data('id');
+        var brandsName = $(this).data('name');
+        $('#editBrandsId').val(brandsId);
+        $('#editBrandsName').val(brandsName);
+        $('#editBrandsModal').modal('show');
+      });
+  
+      $('#addBrandsModalBtn').click(function() {
+        $('#addBrandsModal').modal('show');
+      });
+  
+      $('#editBrandsForm').submit(function(event) {
+        event.preventDefault(); // Prevent the form from submitting immediately
+  
+        var brandsId = $('#editBrandsId').val();
+        var brandsName = $('#editBrandsName').val();
+        var isValidName = /^[a-zA-Z0-9\s\-]{3,}$/.test(brandsName);
+  
+        if (!isValidName) {
+          $('#nameValidationMsg').text('Brand name is invalid.').show();
+          return;
+        }
+  
+        // AJAX request to check if the brand name already exists
+        $.ajax({
+          url: '/admin/editBrands', // Route to check the brand name
+          method: 'POST',
+          data: { id: brandsId, name: brandsName },
+          success: function(response) {
+            if (response.exists) {
+              $('#nameValidationMsg').text('Brand name already exists.').show();
+            } else {
+              $('#nameValidationMsg').hide();
+              $('#editBrandsForm').unbind('submit').submit(); // Submit the form if validation passes
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('Error checking brand name:', error);
+          }
+        });
+      });
+  
+      $('.status-btn').click(function(event) {
+        event.preventDefault();
+        
+        var form = $(this).closest('form');
+        var status = $(this).data('status');
+        var brandsId = form.find('input[name="id"]').val();
+        
+        Swal.fire({
+          title: 'Are you sure?',
+          text: `Make this brand as ${status}?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, do it!',
+          cancelButtonText: 'No, cancel!',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios.post('/admin/' + (status === 'Active' ? 'listBrands' : 'unlistBrands'), { id: brandsId })
+              .then(function(response) {
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Success',
+                  text: 'Brands status updated successfully!',
+                }).then(() => {
+                  window.location.reload();
+                });
+              })
+              .catch(function(error) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'An error occurred while updating brand status!',
+                });
+                console.error(error);
+              });
+          }
+        });
+      });
+    });
+  </script>
+  

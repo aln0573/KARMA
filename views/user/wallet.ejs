@@ -1,0 +1,182 @@
+<%- include('../layouts/header') %>
+<%- include('../layouts/nav') %>
+
+<div class="container mt-5">
+    <h4 class="ml-4 wallet-title">Wallet</h4>
+    <div class="card mt-4 wallet-card" id="walletcontainer">
+        <div class="card-header text-center bg-gradient">
+            <h5 class="walletText">KARMA WALLET</h5>
+        </div>
+        <div class="card-body text-center">
+            <h4 class="walletText">Available Balance: <b>₹ <span id="balance"><%= balance %></span></b></h4>
+        </div>
+    </div>
+</div>
+<div class="text-center mt-4">
+    <a href="#" id="showTransactionsLink" class="show-transactions-link">Show Transactions</a>
+</div>
+<div class="container mt-5" id="transactionTableContainer" style="display: none;">
+    <% if (history.length === 0) { %>
+        <div class="text-center">
+            <p class="no-transactions">No Transactions Yet</p>
+        </div>
+    <% } else { %>
+        <div class="table-responsive">
+            <table class="table table-hover transaction-table">
+                <thead class="table-header">
+                    <tr>
+                        <th scope="col">DATE</th>
+                        <th scope="col">AMOUNT</th>
+                        <th scope="col">TYPE</th>
+                        <th scope="col">BALANCE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% history.forEach(transaction => { %>
+                        <tr>
+                            <td><%= new Date(transaction.date).toLocaleDateString() %></td>
+                            <td>₹<%= transaction.amount %></td>
+                            <td class="<%= transaction.transactionType === 'debit' ? 'text-danger' : 'text-success' %>">
+                                <%= transaction.transactionType %>
+                            </td>
+                            <td>₹<%= transaction.newBalance %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center mt-4">
+                <% if (currentPage > 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                <% } else { %>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&laquo;</span>
+                    </li>
+                <% } %>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+                <% if (currentPage < totalPages) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                <% } else { %>
+                    <li class="page-item disabled">
+                        <span class="page-link" aria-hidden="true">&raquo;</span>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    <% } %>
+</div>
+<br>
+<br>
+ 
+
+<%- include("../layouts/footer.ejs") %>
+
+<script>
+    document.getElementById('showTransactionsLink').addEventListener('click', function(event) {
+        event.preventDefault();
+        var tableContainer = document.getElementById('transactionTableContainer');
+        tableContainer.style.display = tableContainer.style.display === 'none' ? 'block' : 'none';
+    });
+</script>
+
+
+<style>
+    /* Styles for Wallet Page */
+.wallet-title {
+    color: #333;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.wallet-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.wallet-card:hover {
+    transform: scale(1.02);
+}
+
+.bg-gradient {
+    background: linear-gradient(45deg, #32CD32, #006400);
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+}
+
+.walletText {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2rem;
+}
+
+.show-transactions-link {
+    color: #006400;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.show-transactions-link:hover {
+    color: #32CD32;
+}
+
+.transaction-table {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-header {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.no-transactions {
+    color: #888;
+    font-size: 1.1rem;
+    font-style: italic;
+}
+
+.page-link {
+    color: #006400;
+}
+
+.page-link:hover {
+    color: #32CD32;
+}
+
+.pagination .active .page-link {
+    background-color: #006400;
+    border-color: #006400;
+    color: #fff;
+}
+
+/* Button Animations */
+.page-item .page-link {
+    transition: all 0.3s ease;
+}
+
+.page-item:hover .page-link {
+    background-color: #32CD32;
+    border-color: #32CD32;
+    color: #fff;
+}
+
+</style>
