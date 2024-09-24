@@ -17,6 +17,9 @@
                     </li>
                 </ul>
             </nav>
+           <div class="d-flex">
+               <input id="searchInput" class="form-control me-2" type="search" placeholder="Search" aria-label="Search"/>
+           </div>
         </div>
         <div class="col-lg-12 grid-margin stretch-card">
             <div class="card shadow">
@@ -119,10 +122,13 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="d-flex mb-3">
+                    <input id="productSearchInput" class="form-control" type="search" placeholder="Search Products" aria-label="Search"/>
+                </div>
+
                 <form id="addOfferForm" method="POST" action="/offers/add">
                     <div class="form-group">
                         <label for="addProductName">Product Name</label>
-                        <!-- Add the multiple attribute to allow multiple selections -->
                         <select class="form-control" name="productIds" id="addProductName" multiple required>
                             <option disabled>Select Products</option>
                             <% activeProducts.forEach(product => { %>
@@ -149,9 +155,46 @@
 </div>
 
 
+
+
 <%- include('../layoutsAdmin/adminfooter') %>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+document.getElementById('productSearchInput').addEventListener('keyup', filterProducts);
+function filterProducts() {
+    const query = document.getElementById('productSearchInput').value.toLowerCase();
+    const options = document.querySelectorAll('#addProductName option');
+    options.forEach(option => {
+        if (option.disabled) return;
+        const productName = option.textContent.toLowerCase();
+        if (productName.includes(query)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+};
+</script>
+
+<script>
+document.getElementById('searchInput').addEventListener('keyup', filterOffers);
+function filterOffers() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const productName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+        const offerPercentage = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+        const expiryDate = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+        if (productName.includes(query) || offerPercentage.includes(query) || expiryDate.includes(query)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+};
+</script>
 
 <script>
     document.getElementById('addOfferForm').addEventListener('submit', async function (event) {
@@ -240,7 +283,7 @@
             }
 
             try {
-                const response = await axios.post(`/admin/editProductOffer?offerId=${offerId}&offerPercentage=${offerPercentage}&expiryDate=${expiryDate}`);
+                const response = await axios.put(`/admin/editProductOffer?offerId=${offerId}&offerPercentage=${offerPercentage}&expiryDate=${expiryDate}`);
                 if (response.data.success) {
                     Swal.fire({
                         icon: 'success',

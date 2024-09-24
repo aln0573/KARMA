@@ -72,22 +72,37 @@
                  <div class="pagination-container mt-4">
                     <ul class="pagination justify-content-center">
                         <% if (currentPage > 1) { %>
-                        <li class="page-item">
-                            <a class="page-link page-link-custom" href="?page=<%= currentPage - 1 %>" style="background-color: #fff; border-color: #000; color: #000;">Previous</a>
-                        </li>
+                            <li class="page-item">
+                                <a class="page-link page-link-custom" href="?page=<%= currentPage - 1 %>" style="background-color: #fff; border-color: #000; color: #000;">Previous</a>
+                            </li>
                         <% } %>
-                        <% for(let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" style="border-color: #000;">
-                            <a class="page-link page-link-custom <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" href="?page=<%= i %>" style="border-color: #000;"><%= i %></a>
-                        </li>
+                
+                        <% 
+                        // Calculate the start and end page numbers for a maximum of 10 pages to show
+                        const maxPagesToShow = 10;
+                        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+                        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+                
+                        // Adjust the start page if we are near the end
+                        if (endPage - startPage < maxPagesToShow - 1) {
+                            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+                        }
+                        %>
+                
+                        <% for(let i = startPage; i <= endPage; i++) { %>
+                            <li class="page-item <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" style="border-color: #000;">
+                                <a class="page-link page-link-custom <%= i === currentPage ? 'bg-dark text-light' : 'btn-light text-dark' %>" href="?page=<%= i %>" style="border-color: #000;"><%= i %></a>
+                            </li>
                         <% } %>
+                
                         <% if (currentPage < totalPages) { %>
-                        <li class="page-item">
-                            <a class="page-link page-link-custom" href="?page=<%= currentPage + 1 %>" style="background-color: #fff; border-color: #000; color: #000;">Next</a>
-                        </li>
+                            <li class="page-item">
+                                <a class="page-link page-link-custom" href="?page=<%= currentPage + 1 %>" style="background-color: #fff; border-color: #000; color: #000;">Next</a>
+                            </li>
                         <% } %>
                     </ul>
                 </div>
+                
                 </div>
             </div>
         </div>

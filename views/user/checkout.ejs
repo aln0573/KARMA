@@ -30,7 +30,7 @@
                                         ₹ <%= item.productId.price %>
                                     <% } %> x <%= item.quantity %>
                                 </p>
-                                <p>Brand: <%= item.productId.category.categoryName %></p>
+                                <p>Brand: <%= item.productId.brand.brandsName %></p>
                             </div>
                         </div>
                         <% if (item.productId.offerPrice) { %>
@@ -40,7 +40,6 @@
                         <% } %>
                     <% }) %>
                     <div class="total-price">
-                        <!-- <h4>Total Price: ₹ <%= totalPrice.toFixed(2) %></h4> -->
                     </div>
                 </div>
             </div>
@@ -83,49 +82,58 @@
                     </div>
                 </div>
 
-                <!-- Coupon Section -->
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center" id="headingCoupons">
-                        <h2 class="mb-0">
-                            <button id="viewCoupons" class="btn btn-link text-left collapsed view-coupons-btn" type="button" data-toggle="collapse" data-target="#collapseCoupons" aria-expanded="false" aria-controls="collapseCoupons">
-                                View Coupons <i class="fa fa-chevron-down ml-2"></i>
+<!-- Coupon Section -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center" id="headingCoupons">
+        <h2 class="mb-0">
+            <button id="viewCoupons" class="btn btn-link text-left collapsed view-coupons-btn" type="button" data-toggle="collapse" data-target="#collapseCoupons" aria-expanded="false" aria-controls="collapseCoupons">
+                View Coupons <i class="fa fa-chevron-down ml-2"></i>
+            </button>
+        </h2>
+    </div>
+    <div id="collapseCoupons" class="collapse" aria-labelledby="headingCoupons" data-parent="#accordionExample">
+        <div class="card-body">
+            <%
+                let availableCoupons = coupons.filter(function(coupon) {
+                    return totalPrice >= coupon.minPrice;
+                });
+            %>
+
+            <% if (availableCoupons.length === 0) { %>
+                <p>No coupons available</p> 
+            <% } else { %>
+                <% availableCoupons.forEach(function(coupon) { %> 
+                    <!-- Coupon List -->
+                    <div class="coupon-list">
+                        <div class="form-check mb-2">
+                            <span><%= coupon.couponCode %> - <%= coupon.percentage %>% off (Min Price: ₹<%= coupon.minPrice %> | Max Redeem Amount: ₹<%= coupon.maxRedeemAmount %>)</span> <br>
+                            <span>Expires on: <%= coupon.expiryDate.toDateString() %></span>
+                            <button
+                                class="btn btn-sm ml-2"
+                                data-coupon-id="<%= coupon._id %>"
+                                data-coupon-code="<%= coupon.couponCode %>"
+                                onclick="applyCoupon('<%= coupon._id %>', '<%= coupon.couponCode %>')"
+                                style="
+                                    background: linear-gradient(45deg, #FFBA00, #FF6C00);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 4px;
+                                    padding: 8px 16px;
+                                    transition: background 0.3s ease;
+                                "
+                                onmouseover="this.style.background = 'linear-gradient(45deg, #FF6C00, #FFBA00)'"
+                                onmouseout="this.style.background = 'linear-gradient(45deg, #FFBA00, #FF6C00)'"
+                            >
+                                Apply
                             </button>
-                        </h2>
-                    </div>
-                    <div id="collapseCoupons" class="collapse" aria-labelledby="headingCoupons" data-parent="#accordionExample">
-                        <div class="card-body">
-                            <% coupons.forEach(function(coupon) { %>
-                                <!-- Coupon List -->
-                                <div class="coupon-list">
-                                    <div class="form-check mb-2">
-                                        <span><%= coupon.couponCode %> - <%= coupon.percentage %>% off (Min Price: ₹<%= coupon.minPrice %> | Max Redeem Amount: ₹<%= coupon.maxRedeemAmount %>)</span> <br>
-                                        <span>Expires on: <%= coupon.expiryDate.toDateString() %></span>
-                                        <button
-                                        class="btn btn-sm ml-2"
-                                        data-coupon-id="<%= coupon._id %>"
-                                        data-coupon-code="<%= coupon.couponCode %>"
-                                        onclick="applyCoupon('<%= coupon._id %>', '<%= coupon.couponCode %>')"
-                                        style="
-                                            background: linear-gradient(45deg, #FFBA00, #FF6C00);
-                                            color: white;
-                                            border: none;
-                                            border-radius: 4px;
-                                            padding: 8px 16px;
-                                            transition: background 0.3s ease;
-                                        "
-                                        onmouseover="this.style.background = 'linear-gradient(45deg, #FF6C00, #FFBA00)'"
-                                        onmouseout="this.style.background = 'linear-gradient(45deg, #FFBA00, #FF6C00)'"
-                                    >
-                                        Apply
-                                    </button>
-                                    
-                                    </div>
-                                </div><br>
-                            <% }) %>
                         </div>
-                    </div>
-                </div>
-            </div>
+                    </div><br>
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+</div>
+ </div>
 
             <!-- Add Address Form (Initially Hidden) -->
             <div id="addAddressForm" style="display: none;">
@@ -174,47 +182,61 @@
             </div>
         </div>
 
-        <!-- Cart Totals -->
-        <div class="col-lg-4 col-md-5">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="stext-301">Cart Total</h4>
-                </div>
-                <div class="card-body" id="carttotalsinside">
-                    <p>Price : <span class="float-right">₹ <%= totalPrice.toFixed(2) %></span></p>
-                    <p>Discount : <span class="float-right">₹ 0.00</span></p>
-                    <p>Shipping : <span class="float-right" style="color: darkgreen;">Free</span></p>
-                    <p>Total : <span class="float-right" id="totalPrice" data-totalprice="<%= totalPrice.toFixed(2) %>"><b>₹ <%= totalPrice.toFixed(2) %></b></span></p>
-                    <div class="form-group">
-                        <label>Payment Method</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod" <% if (totalPrice > 5000) { %> disabled <% } else { %> checked <% } %>>
-                            <label class="form-check-label" for="cod">Cash on delivery</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
-                            <label class="form-check-label" for="razorpay">RazorPay</label>
-                        </div>
-                        <% if (totalPrice > 5000) { %>
-                            <small id="codMessage">COD is not available for orders above ₹ 5000.</small>
-                        <% } %>
-                    </div>
-                    <button id="placeOrderBtn" class="btn btn-primary btn-block" 
-                    style="background: linear-gradient(to right, #FFBA00, #FF6C00); border: none; color: white;" 
-                    data-totalprice="<%= totalPrice.toFixed(2) %>">PLACE ORDER</button>
+<!-- Cart Totals -->
+<div class="col-lg-4 col-md-5">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="stext-301">Cart Total</h4>
+        </div>
+        <div class="card-body" id="carttotalsinside">
+            <p>Price : <span class="float-right">₹ <%= totalPrice.toFixed(2) %></span></p>
+            <p>Discount : <span class="float-right">₹ 0.00</span></p>
+            <% const taxRate = 0.08 %>
+            <% const taxAmount = totalPrice * taxRate %>
+            <p>Tax (8%) : <span class="float-right">₹ <%= taxAmount.toFixed(2) %></span></p>
+            <p>Shipping : <span class="float-right" style="color: darkgreen;">Free</span></p>
+            <p>Total : <span class="float-right" id="totalPrice" 
+                data-totalprice="<%= (totalPrice + taxAmount).toFixed(2) %>">
+                <b>₹ <%= (totalPrice + taxAmount).toFixed(2) %></b></span></p>
+                <div class="form-group">
+                    <label>Payment Method</label>
                     
-                    <button class="btn btn-outline-secondary btn-block" 
-                    style="background: linear-gradient(to right, #32CD32, #006400); border: none; color: white;" 
-                    onclick="window.location.href='/shop'">CONTINUE SHOPPING</button>
+                    <!-- Cash on Delivery Option -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="cod" value="cod"
+                        <% if ((totalPrice + taxAmount) > 1000) { %> disabled <% } else { %> checked <% } %>>
+                        <label class="form-check-label" for="cod">Cash on delivery</label>
+                    </div>
+                    
+                    <!-- Razorpay Option -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="razorpay" value="razorpay">
+                        <label class="form-check-label" for="razorpay">RazorPay</label>
+                    </div>
+                    
+                    <!-- WalletPay Option -->
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="walletpay" value="walletpay">
+                        <label class="form-check-label" for="walletpay">WalletPay</label>
+                    </div>
+                
+ 
                 </div>
-            </div>
-        </div>        
+                
+            <button id="placeOrderBtn" class="btn btn-primary btn-block" 
+            style="background: linear-gradient(to right, #FFBA00, #FF6C00); border: none; color: white;" 
+            data-totalprice="<%= (totalPrice + taxAmount).toFixed(2) %>">PLACE ORDER</button>
+            
+            <button class="btn btn-outline-secondary btn-block" 
+            style="background: linear-gradient(to right, #32CD32, #006400); border: none; color: white;" 
+            onclick="window.location.href='/shop'">CONTINUE SHOPPING</button>
+        </div>
+    </div>
+</div>
+      
     </div>
 </div>
 <div id="snackbar"></div>
-
-
-
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -275,7 +297,11 @@ function applyCoupon(couponId, couponCode) {
                 const discountAmount = Math.ceil((discountPercentage * totalPrice) / 100);
                 const maxRedeemAmount = response.data.maxRedeemAmount;
                 const finalDiscount = discountAmount > maxRedeemAmount ? maxRedeemAmount : discountAmount;
-                finalTotalPrice = totalPrice - finalDiscount;  
+                finalTotalPrice = totalPrice - finalDiscount;
+                if(finalTotalPrice < 1000) {
+                   const checker = document.getElementById('cod');
+                   checker.disabled = false;
+                }
 
                 document.querySelector("#totalPrice").innerHTML = `<b>₹ ${finalTotalPrice.toFixed(2)}</b>`;
                 document.querySelector(".card-body p:nth-child(2) span").innerText = `₹ ${finalDiscount.toFixed(2)}`;
@@ -300,43 +326,35 @@ function applyCoupon(couponId, couponCode) {
 
 <!-- ORDER PLACING -->
 <script>
-    document.getElementById('placeOrderBtn').addEventListener('click', async function() {
-        const selectedAddress = document.querySelector('input[name="address"]:checked');
-        const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-        const totalPrice = this.getAttribute('data-totalprice');
+   document.getElementById('placeOrderBtn').addEventListener('click', async function () {
+    const selectedAddress = document.querySelector('input[name="address"]:checked');
+    const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    const totalPrice = finalTotalPrice || parseFloat(this.getAttribute('data-totalprice')); 
+    
+    if (!selectedAddress) {
+        Swal.fire({
+            text: 'Please select an address!'
+        });
+        return;
+    }
 
-        if (!selectedAddress) {
-            Swal.fire({
-                text: 'Please select an address!'
-            });
-            return;
-        }
+    try {
+        const response = await axios.post('/checkout/place-order', {
+            selectedAddress: selectedAddress.value,
+            paymentMethod: selectedPaymentMethod,
+            totalprice: totalPrice, 
+        });
 
-        if (selectedPaymentMethod !== 'cod' && selectedPaymentMethod !== 'razorpay') {
-            Swal.fire({
-                title: 'Sorry...',
-                text: 'Currently, only Cash on Delivery and Razorpay are available!'
-            });
-            return;
-        }
-
-        try {
-            const response = await axios.post('/checkout/place-order', {
-                selectedAddress: selectedAddress.value,
-                paymentMethod: selectedPaymentMethod,
-                totalprice: finalTotalPrice  
-            });
-
-            if (response.data.success) {
-                if (selectedPaymentMethod === 'razorpay') {
-                    var options = {
+        if (response.data.success) {
+            if (selectedPaymentMethod === 'razorpay') {
+                var options = {
                     key: response.data.key,
                     amount: response.data.amount,
                     currency: "INR",
                     name: 'KARMA',
                     description: "Payment for order",
                     order_id: response.data.razorpayOrderId,
-                    handler: function(response) {
+                    handler: function (response) {
                         if (response.razorpay_payment_id) {
                             console.log("Payment Successful: ", response);
                             window.location.href = "/order-success";
@@ -367,46 +385,44 @@ function applyCoupon(couponId, couponCode) {
                     }, 3000);
                 });
 
-                } else {
-                    Swal.fire({
-                        title: 'Processing your order...!',
-                        showConfirmButton: false,
-                        timer: 2000
-                    }).then(() => {
-                        window.location.href = '/order-success';
-                    });
-                }
             } else {
                 Swal.fire({
-                    title: 'Oops...',
-                    text: response.data.message || 'Something went wrong!'
+                    title: 'Processing your order...!',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    window.location.href = '/order-success';
                 });
             }
-        } catch (error) {
-            console.error('Error:', error);
+        } else {
             Swal.fire({
                 title: 'Oops...',
-                text: error.response?.data?.message || 'Something went wrong!'
+                text: response.data.message || 'Something went wrong!'
             });
         }
-    });
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Oops...',
+            text: error.response?.data?.message || 'Something went wrong!'
+        });
+    }
+});
 
-             // Remove coupon
-           function removeCoupon(couponId) {
-               Swal.fire({
-                   text: 'Are you sure you want to remove the coupon?',
-                   showCancelButton: true,
-                   confirmButtonText: 'Yes, remove it',
-                   cancelButtonText: 'Cancel'
-               }).then((result) => {
-                   if (result.isConfirmed) {
-                       currentCouponId = null;
-                       window.location.reload();
-                   }
-               });
-           }
-
-    document.addEventListener("DOMContentLoaded", function() {
+    function removeCoupon(couponId) {
+        Swal.fire({
+            text: 'Are you sure you want to remove the coupon?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, remove it',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                currentCouponId = null;
+                window.location.reload();
+            }
+        });
+    };
+    document.addEventListener("DOMContentLoaded", function () {
         const validationPatterns = {
             name: /^[A-Za-z]+(?: [A-Za-z]+)*$/,
             phone: /^[1-9]\d{9}$/,
@@ -441,7 +457,7 @@ function applyCoupon(couponId, couponCode) {
             });
         });
 
-        document.getElementById('actualAddAddressForm').addEventListener('submit', async function(event) {
+        document.getElementById('actualAddAddressForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             let isValid = true;
 
@@ -515,8 +531,8 @@ function applyCoupon(couponId, couponCode) {
     function cancelForm() {
         document.getElementById('addAddressForm').style.display = 'none';
     }
-
 </script>
+
 
 
 <style>

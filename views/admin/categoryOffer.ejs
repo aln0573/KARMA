@@ -238,7 +238,7 @@
             }
 
             try {
-                const response = await axios.post('/admin/editCategoryOffer', {
+                const response = await axios.put('/admin/editCategoryOffer', {
                     offerId,
                     offerPercentage,
                     expiryDate

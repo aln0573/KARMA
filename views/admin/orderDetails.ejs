@@ -105,7 +105,7 @@
                                                                 <option value="Ordered" disabled <%= item.itemStatus === 'Ordered' ? 'selected' : '' %> <%= item.itemStatus === 'Delivered' ? 'disabled' : '' %>>Ordered</option>
                                                                 <option value="Shipped" <%= item.itemStatus === 'Shipped' ? 'selected' : '' %> <%= item.itemStatus === 'Delivered' ? 'disabled' : '' %>>Shipped</option>
                                                                 <option value="Delivered" <%= item.itemStatus === 'Delivered' ? 'selected' : '' %> <%= item.itemStatus === 'Delivered' ? 'disabled' : '' %>>Delivered</option>
-                                                                <option value="Canceled" disabled <%= item.itemStatus === 'Canceled' ? 'selected' : '' %> <%= item.itemStatus === 'Delivered' ? 'disabled' : '' %>>Canceled</option>
+                                                                <option value="Cancelled" disabled <%= item.itemStatus === 'Cancelled' ? 'selected' : '' %> <%= item.itemStatus === 'Delivered' ? 'disabled' : '' %>>Canceled</option>
                                                                 <option value="Returned" disabled <%= item.itemStatus === 'Returned' ? 'selected' : '' %> <%= item.itemStatus === 'Delivered' ? 'disabled' : '' %>>Returned</option>
                                                             <% } %>
                                                         </select>
@@ -182,6 +182,7 @@
  
  <script>
     function handleStatusChange(orderId, itemId , status ,itemStatus){
+     
         if(itemStatus === 'Return Pending'){
             confirmUpdateReturnStatus(orderId, itemId, status);
         }else{

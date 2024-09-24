@@ -3,9 +3,8 @@ const mongoose = require("mongoose");
 
 const walletSchema = mongoose.Schema({
     userId: {
-        type: ObjectId,
-        ref: "Users",
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
     },
     balance: {
         type: Number

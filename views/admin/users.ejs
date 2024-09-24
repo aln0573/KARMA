@@ -117,7 +117,7 @@
       reverseButtons: true
     }).then((result)=>{
       if(result.isConfirmed){
-        axios.post(`/admin/blockUser/?id=${userId}`)
+        axios.patch(`/admin/blockUser/?id=${userId}`)
         .then((response)=>{
           if(response.data.success){
             Swal.fire(
@@ -157,7 +157,7 @@
       reverseButtons: true
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.post(`/admin/unblockUser/?id=${userId}`)
+        axios.patch(`/admin/unblockUser/?id=${userId}`)
           .then((response) => {
             if (response.data.success) {
               Swal.fire(

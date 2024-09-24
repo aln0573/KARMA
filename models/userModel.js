@@ -33,13 +33,11 @@ const UserSchema = new mongoose.Schema({
     },
     referralCode: {
         type: String,
-        // Unique referral code for the user
         unique: true,
-        sparse: true,  // Allows unique constraint with null values
+        sparse: true, 
     },
     referredBy: {
         type: String,
-        // The referral code used by the user during registration
         default: null,
     },
 });

@@ -25,7 +25,7 @@ const productSchema = mongooose.Schema({
     },
     gender: {
         type: String,
-        enum: ["Men" , "Women"]
+        // enum: ["Men" , "Women"]
     },
     productDec: {
         type: String

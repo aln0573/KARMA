@@ -41,11 +41,7 @@ const addBrands = async (req,res)=>{
 const addNewBrands = async (req, res) => {
     try {
         const { brandsName } = req.body;
-
-        // Remove extra spaces and convert to lowercase for consistent comparison
         const formattedBrandName = brandsName.trim().toLowerCase();
-
-        // Check for existing brand with the same formatted name
         const existingBrands = await brandModel.findOne({
             brandsName: { $regex: new RegExp('^' + formattedBrandName + '$', 'i') }
         });

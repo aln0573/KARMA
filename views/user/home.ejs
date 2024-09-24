@@ -1,5 +1,85 @@
 <%-include("../layouts/header.ejs")%>
-<%- include("../layouts/nav") %>
+<header class="header_area sticky-header">
+    <div class="main_menu">
+<nav class="navbar navbar-expand-lg navbar-light main_box">
+    <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <a class="navbar-brand logo_h" href="index"><img src="img/logo.png" alt=""></a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse offset" id="navbarSupportedContent">
+            <ul class="nav navbar-nav menu_nav ml-auto">
+                <li class="nav-item active"><a class="nav-link" href="/">Home</a></li>
+                <li class="nav-item submenu dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                     aria-expanded="false">Shop</a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item"><a class="nav-link" href="shop">Shop Category</a></li>
+                        <li class="nav-item"><a class="nav-link" href="checkout">Product Checkout</a></li>
+                        <li class="nav-item"><a class="nav-link" href="cart">Shopping Cart</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item submenu dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                     aria-expanded="false">Account</a>
+                    <ul class="dropdown-menu">
+                        <li class="nav-item"><a class="nav-link" href="account">Account</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item submenu dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                     aria-expanded="false">Pages</a>
+                    <ul class="dropdown-menu">
+                        <% if (user) { %>
+                            <li class="nav-item"><a class="nav-link" href="#">Welcome, <%= user.name %>!</a></li>
+                            <li class="nav-item"><a class="nav-link" href="logout">Logout</a></li>
+                        <% } else { %>
+                            <li class="nav-item"><a class="nav-link" href="login">Login</a></li>
+                        <% } %>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="contact">Contact</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item"><a href="/cart" class="cart"><span class="ti-bag"></span></a></li>
+                <li class="nav-item">
+                    <button class="search"><span class="lnr lnr-magnifier" id="search"></span></button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+</div>
+<div class="search_input" id="search_input_box">
+    <div class="container">
+        <form class="d-flex justify-content-between">
+            <input type="text" class="form-control" id="search_input" placeholder="Search Here">
+            <button type="submit" class="btn"></button>
+            <span class="lnr lnr-cross" id="close_search" title="Close Search"></span>
+        </form>
+    </div>
+</div>
+</header>
+
+
+<section class="banner-area organic-breadcrumb">
+    <div class="container">
+        <div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
+            <div class="col-first">
+                <h1>HOME PAGE</h1>
+                <nav class="d-flex align-items-center">
+                    <a href="index.html"><span ></span></a>
+                    <a href="single-product.html"></a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
 </head>
 
 <body>
@@ -13,11 +93,10 @@
 						<div class="row single-slide align-items-center d-flex">
 							<div class="col-lg-5 col-md-6">
 								<div class="banner-content">
-									<h1>Nike New <br>Collection!</h1>
-									<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-										dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
+									<h1>Dior New <br>Collection!</h1>
+									<p>Dior Sauvage Eau de Toilette is a fresh, raw, and noble fragrance inspired by wide-open spaces and blue skies. The scent opens with vibrant notes of Calabrian bergamot and pepper, followed by a heart of Sichuan pepper, lavender, and geranium. The base is composed of ambroxan, cedar, and labdanum, creating a masculine and sophisticated aroma that is both rugged and refined.</p>
 									<div class="add-bag d-flex align-items-center">
-										<a class="add-btn" href=""><span class="lnr lnr-cross"></span></a>
+										<a class="add-btn" href="" style="padding: 13px;"><span class="lnr lnr-cross"></span></a>
 										<span class="add-text text-uppercase">Add to Bag</span>
 									</div>
 								</div>
@@ -115,7 +194,7 @@
 								<img class="img-fluid w-100" src="img/category/c1.jpg" alt="">
 								<a href="img/category/c1.jpg" class="img-pop-up" target="_blank">
 									<div class="deal-details">
-										<h6 class="deal-title">Sneaker for Sports</h6>
+										<h6 class="deal-title">Dolce Gabbana</h6>
 									</div>
 								</a>
 							</div>
@@ -126,7 +205,7 @@
 								<img class="img-fluid w-100" src="img/category/c2.jpg" alt="">
 								<a href="img/category/c2.jpg" class="img-pop-up" target="_blank">
 									<div class="deal-details">
-										<h6 class="deal-title">Sneaker for Sports</h6>
+										<h6 class="deal-title">Gucci</h6>
 									</div>
 								</a>
 							</div>
@@ -148,7 +227,7 @@
 								<img class="img-fluid w-100" src="img/category/c4.jpg" alt="">
 								<a href="img/category/c4.jpg" class="img-pop-up" target="_blank">
 									<div class="deal-details">
-										<h6 class="deal-title">Sneaker for Sports</h6>
+										<h6 class="deal-title">Sneakers</h6>
 									</div>
 								</a>
 							</div>
@@ -161,7 +240,7 @@
 						<img class="img-fluid w-100" src="img/category/c5.jpg" alt="">
 						<a href="img/category/c5.jpg" class="img-pop-up" target="_blank">
 							<div class="deal-details">
-								<h6 class="deal-title">Sneaker for Sports</h6>
+								<h6 class="deal-title">Black friday super sales</h6>
 							</div>
 						</a>
 					</div>
@@ -208,21 +287,13 @@
 						  <% } %>
 						</div>
 						<div class="prd-bottom">
-							<a href="#" onclick="addToCart('<%= product._id %>', event)" class="social-info">
+							<a href="javascript:void(0)" class="social-info" onclick="addToCart('<%= product._id %>')">
 								<span class="ti-bag"></span>
 								<p class="hover-text">Add to bag</p>
 							</a>
-						  <a href="/wishlist/<%= product._id %>" class="social-info">
+							<a class="social-info" href="#" onclick="toggleWishlist('<%= product._id %>')" id="wishlist-button">
 							<span class="lnr lnr-heart"></span>
 							<p class="hover-text">Wishlist</p>
-						  </a>
-						  <a href="/compare/<%= product._id %>" class="social-info">
-							<span class="lnr lnr-sync"></span>
-							<p class="hover-text">Compare</p>
-						  </a>
-						  <a href="/products/<%= product._id %>" class="social-info">
-							<span class="lnr lnr-move"></span>
-							<p class="hover-text">View more</p>
 						  </a>
 						</div>
 					  </div>
@@ -234,6 +305,8 @@
 		  </div>
 		</div>
 	</section>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 	<style>
 		.single-product {
@@ -265,32 +338,68 @@
 		});
 
    
-
-        axios.post('/addcart', { productId: productId })
-            .then(function (response) {
-                console.log(response.data);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Product added to cart successfully!',
-                    customClass: {
-                        icon: 'swal2-icon-custom',
-                        content: 'swal2-content-custom',
-                    }
-                }).then(() => {
-                    // Optionally redirect to the cart page
-                    window.location.href = '/cart';
-                });
-            })
-            .catch(function (error) {
-                console.error('Error adding to cart:', error);
+		function addToCart(productId) {
+    axios.post('/addcart', { productId: productId })
+        .then(function (response) {
+            console.log(response.data);
+            window.location.href = '/cart';
+        })
+        .catch(function (error) {
+            console.error('Error adding to cart:', error);
+            if (error.response && error.response.status === 400) {
+                const errorMessage = error.response.data;
+ 
+                if (errorMessage === 'Product is out of stock') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Out of Stock',
+                        text: 'This product is currently out of stock.',
+                    });
+                }
+                else if (errorMessage === 'Product already exists in cart') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Product in Cart',
+                        text: 'This product is already in your cart.',
+                    });
+                }
+            } else {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Oops...',
-                    text: error.response?.data?.message || 'The product is already in the cart.',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'OK'
+                    title: 'Error',
+                    text: 'There was an issue adding the product to your cart.',
                 });
+            }
+        });
+};
+
+function toggleWishlist(productId) {
+    axios.post('/wishlist/add', null, { params: { productId: productId } })
+        .then(function (response) {
+            const icon = document.getElementById('lnr lnr-heart');
+            if (response.data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: response.data.message,
+                }).then(() => {
+                    window.location.href = '/wishlist';
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: response.data.message,
+                });
+            }
+        })
+        .catch(function (error) {
+            console.error('Error toggling wishlist:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update wishlist.',
             });
+        });
+}
  
 	</script>
 	

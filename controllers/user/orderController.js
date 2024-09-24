@@ -6,6 +6,8 @@ const orderModel = require('../../models/orderModel');
 const productModel = require('../../models/productModel');
 const brandModel = require('../../models/brandModel');
 const categoryModel = require('../../models/categoryModel');
+const couponModel = require('../../models/couponModel');
+const walletModel = require('../../models/walletModel');
 const Razorpay = require('razorpay');
 const { Transaction } = require('mongodb');
 
@@ -28,7 +30,11 @@ const createOrder = async (req, res) => {
                 path: "category",
                 model: "Category"
             }
-        });
+        })
+
+        if (!cartData) {
+            return res.redirect("/checkout");
+        }
 
         const addressId = new mongoose.Types.ObjectId(req.body.selectedAddress);
         const addressArray = await addressModel.aggregate([
@@ -36,16 +42,34 @@ const createOrder = async (req, res) => {
             { $match: { "address._id": addressId } },
         ]);
 
-        if (!addressArray || addressArray.length === 0 || !cartData) {
+        if (!addressArray || addressArray.length === 0) {
             return res.redirect("/checkout");
         }
 
         const address = addressArray[0].address;
-
-        // Check stock before creating the order
         for (const item of cartData.items) {
             if (item.productId.stock < item.quantity) {
                 return res.status(400).json({ success: false, message: `Insufficient stock for ${item.productId.productName}` });
+            }
+        }
+
+        const finalTotalPrice = req.body.totalprice;
+        const userWallet = await walletModel.findOne({ userId });
+
+        if (req.body.paymentMethod === "walletpay") {
+            if (userWallet.balance >= finalTotalPrice) {
+                userWallet.balance -= finalTotalPrice;
+
+                const walletHistory = {
+                    amount: finalTotalPrice,
+                    transactionType: "debit",
+                    newBalance: userWallet.balance,
+                };
+                userWallet.history.push(walletHistory);
+
+                await userWallet.save();
+            } else {
+                return res.json({ success: false, message: "Insufficient Balance" });
             }
         }
 
@@ -83,24 +107,24 @@ const createOrder = async (req, res) => {
                 finalPrice: finalPrice,
             });
 
-            // Update product stock and quantity
             await productModel.findByIdAndUpdate(
                 item.productId._id,
                 {
                     $inc: {
                         quantity: -item.quantity,
-                        stock: -item.quantity // Decrement stock
+                        stock: -item.quantity
                     }
                 }
             );
         }
 
-        // Payment method handling
         if (orderData.paymentMethod === "cod") {
-            if (req.body.totalprice > 5000) {
-                return res.json({ success: false, message: "Cannot place order with COD for amount above 5000" });
+            if (req.body.totalprice > 1000) {
+                return res.json({ success: false, message: "Cannot place order with COD for amount above 1000" });
             }
             orderData.paymentStatus = "Pending";
+        } else if (orderData.paymentMethod === "walletpay") {
+            orderData.paymentStatus = "Paid";
         } else if (orderData.paymentMethod === "razorpay") {
             const razorpayOrder = await razorpayInstance.orders.create({
                 amount: req.body.totalprice * 100,
@@ -114,7 +138,6 @@ const createOrder = async (req, res) => {
         }
 
         const savedOrder = await orderData.save();
-
         await cartModel.findOneAndUpdate({ userId }, { $set: { items: [] } });
         req.session.orderId = savedOrder._id;
 
@@ -141,6 +164,7 @@ const createOrder = async (req, res) => {
 
 
 
+
 // Order success
 const orderSuccess = async (req, res) => {
     try {
@@ -159,27 +183,27 @@ const viewOrders = async (req, res) => {
 
         const userData = await userModel.findOne({ _id: req.session.user_id });
         const totalOrders = await orderModel.countDocuments({ userId: req.session.user_id });
-        const orderData = await orderModel.find({ userId: req.session.user_id }).sort({ date: -1 }).skip(skip).limit(limit);
+        const orderData = await orderModel.find({ userId: req.session.user_id }).sort({ date: -1 }).skip(skip).limit(limit)
 
         const totalPages = Math.ceil(totalOrders / limit);
 
-        res.render('viewOrder', { 
-            user: userData, 
-            order: orderData, 
-            currentPage: page, 
-            totalPages 
+        res.render('viewOrder', {
+            user: userData,
+            order: orderData,
+            currentPage: page,
+            totalPages
         });
     } catch (error) {
         console.log(error);
     }
 };
 
-const payNow = async (req,res) => {
+const payNow = async (req, res) => {
     try {
         const orderId = req.body.orderId;
         const order = await orderModel.findById(orderId).populate('userId');
 
-        if(!orderId){
+        if (!orderId) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
 
@@ -234,59 +258,37 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
-// Order Details
-const orderDetails = async (req, res) => {
+const cancelOrder = async (req, res) => {
     try {
-        const userId = req.session.user_id;
-        const orderId = req.query.orderId;
-
-        if (!userId || !orderId) {
-            return res.redirect('/')
-        }
-
-        const userData = await userModel.findOne({ _id: userId });
+        const { orderId, productId } = req.body;
         const orderData = await orderModel.findOne({ _id: orderId });
-
-        res.render('orderDetails', { user: userData, order: orderData });
-    } catch (error) {
-        res.render('500');
-        console.log(error);
-    }
-};
-
- 
-
-const cancelOrder = async (req,res) => {
-    try {
-        const { orderId , productId } = req.body;
-        const orderData = await orderModel.findOne({_id: orderId});
         let allItemsCancelled = true;
         let refundAmount = 0;
-        for(let item of orderData.items){
-            if(item.productId == productId){
+        for (const item of orderData.items) {
+            if (item.productId == productId) {
                 item.itemStatus = 'Cancelled';
 
                 const product = await productModel.findById(item.productId);
                 const itemPrice = product.offerPrice ? product.offerPrice : product.price;
 
                 refundAmount = itemPrice * item.quantity;
-                await productModel.findByIdAndUpdate(
-                    item.productId,
-                    {$inc: { quantity: item.quantity }}
-                );
+                if (product) {
+                    product.stock += item.quantity;
+                    await product.save();
+                }
 
             }
-            if(item.itemStatus !== "Cancelled"){
+            if (item.itemStatus !== "Cancelled") {
                 allItemsCancelled = false;
             }
         }
         orderData.status = allItemsCancelled ? "Completed" : "Pending";
         await orderData.save();
 
-        if(refundAmount > 0 && orderData.paymentMethod === "razerpay"){
+        if (refundAmount > 0 && orderData.paymentMethod === "razorpay") {
             let wallet = await walletModel.findOne({ userId: orderData.userId });
 
-            if(!wallet){
+            if (!wallet) {
                 wallet = new walletModel({
                     userId: orderData.userId,
                     balance: refundAmount,
@@ -296,7 +298,7 @@ const cancelOrder = async (req,res) => {
                         newBalance: refundAmount,
                     }]
                 })
-            }else{
+            } else {
                 wallet.history.push({
                     amount: refundAmount,
                     transactionType: "Credit",
@@ -306,20 +308,20 @@ const cancelOrder = async (req,res) => {
             }
             await wallet.save();
         }
-        res.json({success: true, message: 'Order item Cancelled Successfully'});
+        res.json({ success: true, message: 'Order item Cancelled Successfully' });
     } catch (error) {
         console.log(error)
     }
 };
 
- const returnProduct = async (req,res) => {
+const returnProduct = async (req, res) => {
     try {
-        const { productId, orderId , reason } = req.body;
-        const orderData = await orderModel.findOne({_id: orderId});
+        const { productId, orderId, reason } = req.body;
+        const orderData = await orderModel.findOne({ _id: orderId });
 
         let itemFound = false;
-        for(let item of orderData.items){
-            if(item.productId.toString() === productId && item.itemStatus === "Delivered"){
+        for (let item of orderData.items) {
+            if (item.productId.toString() === productId && item.itemStatus === "Delivered") {
                 item.itemStatus = 'Return Pending';
                 item.reason = reason;
                 itemFound = true
@@ -329,20 +331,50 @@ const cancelOrder = async (req,res) => {
 
         orderData.status = 'Return Requested';
         await orderData.save();
-        res.json({success: true,message: 'Return Request Submitted Successfully'});
+        res.json({ success: true, message: 'Return Request Submitted Successfully' });
     } catch (error) {
         console.log(error)
     }
- };
+};
+
+const orderFailed = async (req, res) => {
+    try {
+        const userId = req.session.user_id;
+        if (!userId) {
+            return res.redirect('/shop');
+        }
+
+        const orderId = req.session.orderId;
+
+        const order = await orderModel.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        order.paymentStatus = "Pending";
+        order.status = "Pending";
+        for (let item of order.items) {
+            item.itemStatus = "Pending";
+        }
+
+        await order.save();
+
+        const userData = await userModel.findOne({ _id: userId });
+        res.render('orderFailure', { user: userData });
+    } catch (error) {
+        console.log(error);
+    }
+};
+
 
 module.exports = {
     createOrder,
     orderSuccess,
     viewOrders,
-    orderDetails,
     cancelOrder,
     payNow,
     updateOrderStatus,
-    returnProduct
+    returnProduct,
+    orderFailed
 
 }

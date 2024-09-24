@@ -3,24 +3,23 @@ const productOfferModel = require('../../models/productOfferModel');
 const categoryModel = require('../../models/categoryModel');
 const categoryOfferModel = require('../../models/categoryOfferModel');
 
-const loadproductOffer = async (req,res)=>{
+const loadproductOffer = async (req, res) => {
     try {
         const page = Number(req.query.page) || 1;
         const limit = 5;
-        const skip = (page - 1)* limit;
+        const skip = (page - 1) * limit;
+        const activeProducts = await productModel.find();
 
-        const activeProducts = await productModel.find({ status: 'active' });
-
-        const productOffers = await productOfferModel.find().populate('productId').skip(skip).limit(limit)
-
+        const productOffers = await productOfferModel.find().populate('productId').skip(skip).limit(limit);
         const totalProductOffers = await productOfferModel.countDocuments();
-        const totalPages = Math.ceil(totalProductOffers/limit);
+        const totalPages = Math.ceil(totalProductOffers / limit);
 
-        res.render('productOffer',{activeProducts, productOffers , totalPages , currentPage: page});
+        res.render('productOffer', { activeProducts, productOffers, totalPages, currentPage: page});
     } catch (error) {
         console.log(error);
     }
 };
+
 
 const addProductOffer = async (req,res)=>{
     try {
@@ -130,6 +129,8 @@ const removeCategoryOffer = async (req,res)=>{
         console.log(error);
     }
 };
+
+
 
 
 module.exports = {

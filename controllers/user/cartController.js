@@ -3,6 +3,7 @@ const cartModel = require('../../models/cartModel');
 const productModel = require('../../models/productModel');
 const addressModel = require('../../models/addressModel');
 const couponModel = require('../../models/couponModel');
+const walletModel = require('../../models/walletModel');
 
 // Calculate total
 function calculateCartTotal(cart) {
@@ -35,11 +36,11 @@ const loadCart = async (req, res) => {
         if (cartData) {
             cartCount = cartData.items.length;
         }
-        res.render('cart', { 
-            user: userData, 
-            cartCount: cartCount, 
-            cart: cartData, 
-            calculateCartTotal: calculateCartTotal 
+        res.render('cart', {
+            user: userData,
+            cartCount: cartCount,
+            cart: cartData,
+            calculateCartTotal: calculateCartTotal
         });
     } catch (error) {
         console.log(error);
@@ -97,20 +98,20 @@ const addToCart = async (req, res) => {
 }
 
 
- 
+
 const incrementCart = async (req, res, next) => {
     try {
         const { index } = req.body;
         const cart = await cartModel.findOne({ userId: req.session.user_id }).populate('items.productId');
-        
+
         const item = cart.items[index];
         const product = item.productId;
 
         if (item.quantity < 5) {
-            if(item.quantity >= product.stock) {
+            if (item.quantity >= product.stock) {
                 return res.json({
                     success: false,
-                    message: 'No more stock available' 
+                    message: 'No more stock available'
                 });
             }
             item.quantity++;
@@ -184,6 +185,7 @@ const loadCheckout = async (req, res) => {
     try {
         const userData = await userModel.findOne({ _id: req.session.user_id });
         const couponData = await couponModel.find();
+        const walletData = await walletModel.find();
         const addressData = await addressModel.findOne({ userId: req.session.user_id });
         const cartData = await cartModel.findOne({ userId: req.session.user_id })
             .populate({
@@ -200,17 +202,18 @@ const loadCheckout = async (req, res) => {
                     model: 'brands'
                 }
             })
-        
+
 
         if (!cartData || !cartData.items || cartData.items.length === 0) {
             return res.redirect('/shop');
         }
 
-        res.render('checkout', { 
-            user: userData,  
+        res.render('checkout', {
+            user: userData,
             cart: cartData,
+            walletBalance: walletData,
             coupons: couponData,
-            addresses: addressData ? addressData.address : [] 
+            addresses: addressData ? addressData.address : []
         });
     } catch (error) {
         console.log(error);
@@ -249,7 +252,7 @@ const addNewAddress = async (req, res) => {
     }
 };
 
- 
+
 
 module.exports = {
     loadCart,

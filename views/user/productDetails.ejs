@@ -8,7 +8,6 @@
                 <div class="col-lg-6">
                     <div class="img-zoom-container">
                         <img id="mainProductImage" src="/productimages/<%= product.image[0] %>" alt="Main Product Image" class="img-fluid rounded shadow-sm">
-                        <div id="myresult" class="img-zoom-result"></div>
                     </div>
                     <div class="thumb-img-container mt-3 d-flex justify-content-center">
                         <% product.image.forEach((image, index) => { %>
@@ -46,12 +45,10 @@
                         </ul>
                         <!-- Product Description -->
                         <p><%= product.productDec %></p>
-                
-                        <!-- Action Buttons -->
                         <div class="card_area d-flex align-items-center">
                             <a class="primary-btn" href="#" data-product-id="<%= product._id %>" data-product-stock="<%= product.stock %>" onclick="addToCart('<%= product._id %>')">Add to Cart</a>
-                            <a class="icon_btn" href="#"><i class="lnr lnr-diamond"></i></a>
-                            <a class="icon_btn" href="#" onclick="toggleWishlist('<%= product._id %>')" id="wishlist-button"><i class="lnr lnr-heart" id="wishlist-icon"></i></a>
+                            <a class="icon_btn" href="#" style="padding: 13px;"><i class="lnr lnr-diamond"></i></a>
+                            <a class="icon_btn" href="#" style="padding: 13px;" onclick="toggleWishlist('<%= product._id %>')" id="wishlist-button"><i class="lnr lnr-heart" id="wishlist-icon"></i></a>
                         </div>
                         
 
@@ -65,66 +62,62 @@
     <!--================End Single Product Area =================-->
 
     <%- include("../layouts/footer.ejs") %>
+
+    <style>
+ .img-zoom-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.img-zoom-container img {
+    transition: transform 0.3s ease;
+    width: 100%;
+    height: auto;
+}
+
+.thumb-img-wrap {
+    cursor: pointer;
+}
+
+.thumb-img {
+    width: 80px;
+    height: 80px;
+}
+
+.thumb-img.active {
+    border: 2px solid #FFBA00;
+}
+    </style>
+
+     <!-- Image Zoom -->
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const mainImage = document.getElementById('mainProductImage');
+    const thumbImages = document.querySelectorAll('.thumb-img');
+    thumbImages.forEach(thumb => {
+        thumb.addEventListener('click', function() {
+            thumbImages.forEach(img => img.classList.remove('active'));
+            this.classList.add('active');
+            mainImage.src = this.dataset.image;
+        });
+    });
+    mainImage.addEventListener('mousemove', (e) => {
+        const rect = mainImage.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width * 100;
+        const y = (e.clientY - rect.top) / rect.height * 100;
+
+        mainImage.style.transformOrigin = `${x}% ${y}%`;
+        mainImage.style.transform = 'scale(2)'; 
+    });
+
+    mainImage.addEventListener('mouseleave', () => {
+        mainImage.style.transformOrigin = 'center';
+        mainImage.style.transform = 'scale(1)';
+    });
+});
+    </script>
  
     <script>
-        // Image Zoom Functionality
-        function imageZoom(imgID, resultID) {
-            var img, lens, result, cx, cy;
-            img = document.getElementById(imgID);
-            result = document.getElementById(resultID);
-            lens = document.createElement("DIV");
-            lens.setAttribute("class", "img-zoom-lens");
-            img.parentElement.insertBefore(lens, img);
-            cx = result.offsetWidth / lens.offsetWidth;
-            cy = result.offsetHeight / lens.offsetHeight;
-            result.style.backgroundImage = "url('" + img.src + "')";
-            result.style.backgroundSize = (img.width * cx) + "px " + (img.height * cy) + "px";
-            lens.addEventListener("mousemove", moveLens);
-            img.addEventListener("mousemove", moveLens);
-            lens.addEventListener("touchmove", moveLens);
-            img.addEventListener("touchmove", moveLens);
-    
-            function moveLens(e) {
-                var pos, x, y;
-                e.preventDefault();
-                pos = getCursorPos(e);
-                x = pos.x - (lens.offsetWidth / 2);
-                y = pos.y - (lens.offsetHeight / 2);
-                if (x > img.width - lens.offsetWidth) {x = img.width - lens.offsetWidth;}
-                if (x < 0) {x = 0;}
-                if (y > img.height - lens.offsetHeight) {y = img.height - lens.offsetHeight;}
-                if (y < 0) {y = 0;}
-                lens.style.left = x + "px";
-                lens.style.top = y + "px";
-                result.style.backgroundPosition = "-" + (x * cx) + "px -" + (y * cy) + "px";
-            }
-    
-            function getCursorPos(e) {
-                var a, x = 0, y = 0;
-                e = e || window.event;
-                a = img.getBoundingClientRect();
-                x = e.pageX - a.left;
-                y = e.pageY - a.top;
-                x = x - window.pageXOffset;
-                y = y - window.pageYOffset;
-                return {x : x, y : y};
-            }
-        }
-        imageZoom("mainProductImage", "myresult");
-        document.querySelectorAll('.thumb-img-wrap').forEach((thumbContainer) => {
-            const thumbImg = thumbContainer.querySelector('.thumb-img');
-            const mainImg = document.getElementById('mainProductImage');
-    
-            thumbContainer.addEventListener('click', () => {
-                mainImg.src = thumbImg.dataset.image;
-                document.querySelectorAll('.thumb-img').forEach(img => img.classList.remove('active'));
-                thumbImg.classList.add('active');
-     
-                imageZoom("mainProductImage", "myresult");
-            });
-        });
-    
- 
 function addToCart(productId) {
     axios.post('/addcart', { productId: productId })
         .then(function (response) {
@@ -168,20 +161,15 @@ function toggleWishlist(productId) {
         .then(function (response) {
             const icon = document.getElementById('wishlist-icon');
             if (response.data.success) {
-                // Toggle the icon to reflect the updated wishlist status
                 icon.classList.toggle('lnr-heart');
-                icon.classList.toggle('lnr-heart-o'); // Use an alternative icon to represent "added to wishlist"
-                
-                // Show success message
+                icon.classList.toggle('lnr-heart-o');
                 Swal.fire({
                     icon: 'success',
                     title: response.data.message,
                 }).then(() => {
-                    // Redirect to the wishlist page
                     window.location.href = '/wishlist';
                 });
             } else {
-                // Show warning message
                 Swal.fire({
                     icon: 'warning',
                     title: response.data.message,
@@ -202,8 +190,6 @@ function toggleWishlist(productId) {
 
 <style>
     * {box-sizing: border-box;}
-
-    /* Main Image Zoom Styling */
     .img-zoom-container {
         position: relative;
         text-align: center;
@@ -215,8 +201,8 @@ function toggleWishlist(productId) {
         border: 1px solid #d4d4d4;
         width: 40px;
         height: 40px;
-        cursor: none; /* Hide the default cursor */
-        background-color: rgba(255, 255, 255, 0.4); /* Optional: light white overlay */
+        cursor: none;
+        background-color: rgba(255, 255, 255, 0.4);
     }
 
     .img-zoom-result {
@@ -225,8 +211,6 @@ function toggleWishlist(productId) {
         height: 300px;
         margin-left: 20px;
     }
-
-    /* Thumbnail Image Styling */
     .thumb-img-container {
         display: flex;
         justify-content: center;
