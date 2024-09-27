@@ -205,7 +205,7 @@
         position: relative;
     }
     .btn-linear-red::before {
-        content: '\2190'; /* Unicode for the left arrow */
+        content: '\2190'; 
         position: absolute;
         left: 10px;
         font-size: 20px;
@@ -249,7 +249,6 @@
             return isValid;
         };
 
-        // Event listeners for input fields to validate on change
         document.getElementById('editName').addEventListener('input', function() {
             validateForm();
         });

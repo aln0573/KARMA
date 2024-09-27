@@ -231,7 +231,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch('/cart/remove', {
-                    method: 'POST',
+                    method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -264,5 +264,106 @@
 });
 
 </script>
+
+<style>
+    /* Base styles for the cart area */
+.cart_area {
+    padding: 2rem; /* Use rem for scalable padding */
+}
+
+.table-responsive {
+    overflow-x: auto; /* Allow horizontal scrolling */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 1rem; /* Use rem for scalable padding */
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+    .cart_area {
+        padding: 1rem; /* Adjust padding for smaller screens */
+    }
+    
+    .table {
+        font-size: 1rem; /* Use rem for scalable font size */
+    }
+
+    .media-body p {
+        font-size: 0.875rem; /* Scale down the product name */
+    }
+
+    .img-small {
+        width: 3rem; /* Use rem for scalable image size */
+        height: 3rem;
+    }
+
+    .product_count {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .input-text.qty {
+        width: 3rem; /* Smaller input width */
+        text-align: center;
+    }
+
+    .checkout_btn_inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .primary-btn {
+        width: 100%; /* Full width for the checkout button */
+        margin-top: 0.625rem; /* Use rem for margin */
+    }
+}
+
+/* Specific adjustments for iPhone XR (414px width) */
+@media only screen and (max-width: 414px) {
+    .table-responsive {
+        overflow-x: auto; /* Enable horizontal scroll */
+    }
+
+    .table {
+        font-size: 0.875rem; /* Further reduce font size */
+    }
+
+    .table th, .table td {
+        padding: 0.625rem; /* Use rem for padding */
+    }
+
+    .img-small {
+        width: 2.5rem; /* Further reduce image size */
+        height: 2.5rem;
+    }
+
+    .product_count {
+        flex-direction: column; /* Stack quantity controls vertically */
+    }
+
+    .input-text.qty {
+        margin-bottom: 0.5rem; /* Add spacing between controls */
+    }
+
+    .delete-item {
+        width: 100%; /* Make delete button full width */
+        margin-top: 0.5rem; /* Use rem for margin */
+    }
+}
+
+@media (max-width: 480px) {
+    .table {
+        font-size: 0.875rem; /* Keep font size reduced for extra small screens */
+    }
+}
+
+</style>
 
 <%- include('../layouts/footer') %>

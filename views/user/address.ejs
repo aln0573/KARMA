@@ -109,7 +109,10 @@
             </div>
             <div class="card-footer d-flex justify-content-between">
                 <a href="/loadEditAddress?addressId=<%= address._id %>" class="btn btn-link">Edit</a>
-                <a href="#" class="btn btn-link remove-address-btn" data-address-id="<%= address._id %>">Remove</a>
+                <button type="button" class="btn btn-danger remove-address-btn" data-address-id="<%= address._id %>">
+                    Remove
+                </button>
+                
             </div>
         </div>
     </div>
@@ -378,7 +381,7 @@
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axios.post('/deleteAddress', { addressId })
+                        axios.delete('/deleteAddress', { addressId })
                             .then(response => {
                                 Swal.fire(
                                     'Deleted!',

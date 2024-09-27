@@ -113,7 +113,7 @@
             const formEntries = Object.fromEntries(formData.entries());
 
             try {
-                const response = await axios.post('/editAddress', formEntries);
+                const response = await axios.put('/editAddress', formEntries);
 
                 if (response.status === 200) {
                     Swal.fire({

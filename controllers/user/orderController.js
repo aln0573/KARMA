@@ -105,36 +105,41 @@ const createOrder = async (req, res) => {
                 quantity: item.quantity,
                 price: item.productId.price,
                 finalPrice: finalPrice,
-            });
+            })
 
-            await productModel.findByIdAndUpdate(
-                item.productId._id,
-                {
-                    $inc: {
-                        quantity: -item.quantity,
-                        stock: -item.quantity
-                    }
-                }
-            );
         }
+
+
 
         if (orderData.paymentMethod === "cod") {
             if (req.body.totalprice > 1000) {
                 return res.json({ success: false, message: "Cannot place order with COD for amount above 1000" });
             }
-            orderData.paymentStatus = "Pending";
+            orderData.paymentStatus = "Success";
         } else if (orderData.paymentMethod === "walletpay") {
-            orderData.paymentStatus = "Paid";
+            orderData.paymentStatus = "Success";
         } else if (orderData.paymentMethod === "razorpay") {
             const razorpayOrder = await razorpayInstance.orders.create({
                 amount: req.body.totalprice * 100,
                 currency: "INR",
                 receipt: orderData.orderId,
             });
-            orderData.paymentStatus = "Success";
+            orderData.paymentStatus = "Pending";
             orderData.razorpayOrderId = razorpayOrder.id;
-        } else {
-            orderData.paymentStatus = "Paid";
+        }
+
+        if (orderData.paymentStatus === "Success") {
+            for (const item of cartData.items) {
+                await productModel.findByIdAndUpdate(
+                    item.productId._id,
+                    {
+                        $inc: {
+                            quantity: -item.quantity,
+                            stock: -item.quantity
+                        }
+                    }
+                )
+            }
         }
 
         const savedOrder = await orderData.save();
@@ -169,6 +174,25 @@ const createOrder = async (req, res) => {
 const orderSuccess = async (req, res) => {
     try {
         const userData = await userModel.findOne({ _id: req.session.user_id });
+        const orderId = req.query.orderId
+        if (orderId) {
+            const orderData = await orderModel.findByIdAndUpdate(orderId, { paymentStatus: 'Success' }, { new: true })
+            const cartData = await cartModel.findOne();
+            if (orderData.paymentStatus === "Success") {
+                for (const item of orderData.items) {
+                    await productModel.findByIdAndUpdate(
+                        item.productId,
+                        {
+                            $inc: {
+                                stock: -item.quantity
+                            }
+                        }
+                    )
+                }
+            }
+            await orderData.save()
+        }
+
         res.render('orderPlaced', { user: userData });
     } catch (error) {
         console.log(error);

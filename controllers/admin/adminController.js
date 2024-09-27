@@ -271,13 +271,7 @@ const returnApproval = async (req, res) => {
                     });
                     wallet.balance += Number(item.finalPrice * item.quantity);
                     await wallet.save();
-                    // Update stock quantity
 
-                    const product = await productModel.findById(item.productId); // Assuming `productId` is stored in the item
-                    if (product) {
-                        product.stock += item.quantity; // Add the returned quantity to the stock
-                        await product.save();
-                    }
                 } else {
                     item.itemStatus = 'Delivered';
                     item.isApproved = false;

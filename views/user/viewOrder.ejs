@@ -81,6 +81,15 @@
     </div>
 </section>
 
+<!-- Spinner Modal -->
+<div id="loadingSpinner" class="loading-spinner" style="display: none;">
+    <div class="spinner-backdrop">
+        <div class="spinner"></div>
+        <p>Please wait...</p>
+    </div>
+</div>
+
+
 <div class="container my-5">
     <% if (order && order.length > 0) { %>
         <% order.forEach(order => { %>
@@ -160,7 +169,7 @@
                             <h6 class="font-weight-bold text-dark mt-4">Payment Status</h6>
                             <p class="mt-2"><%= order.paymentStatus %></p>
                             <% if (order.paymentMethod === 'razorpay' && order.paymentStatus === 'Pending') { %>
-                                <button type="button" class="btn btn-sm btn-paynow mt-3" onclick="payNow('<%= order._id %>')">
+                                <button type="button" id="payNow" class="btn btn-sm btn-paynow mt-3" onclick="payNow('<%= order._id %>')">
                                     <i></i> Pay Now
                                 </button>
                             <% } %>
@@ -272,35 +281,27 @@
 <%- include("../layouts/style") %>
 
 <script>
- 
- function downloadInvoice(order) {
+    function downloadInvoice(order) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
         doc.setFontSize(28);
         doc.setFont('Helvetica', 'bold');
         doc.text('Karma Invoice', 105, 20, null, null, 'center');
-        
         doc.setLineWidth(0.5);
         doc.line(20, 25, 190, 25);
-        
         doc.setFontSize(12);
         doc.setFont('Helvetica', 'normal');
         doc.text(`Order ID: #${order.orderId}`, 20, 40);
         doc.text(`Order Date: ${new Date(order.date).toLocaleDateString()}`, 20, 50);
-        
         doc.setFont('Helvetica', 'bold');
-        doc.text('Shipping Address:', 20, 60);
-        
+        doc.text('Shipping Address:', 20, 60); 
         doc.setFont('Helvetica', 'normal');
         doc.text(`${order.address.name}`, 20, 70);
         doc.text(`${order.address.house}`, 20, 80);
         doc.text(`${order.address.city}, ${order.address.state}`, 20, 90);
         doc.text(`${order.address.pincode}`, 20, 100);
-        
         doc.setLineWidth(0.2);
         doc.line(20, 105, 190, 105);
-        
         doc.autoTable({
             head: [['Product', 'Quantity', 'Price', 'Total']],
             body: order.items.map(item => [
@@ -319,18 +320,22 @@
                 fontSize: 10
             }
         });
-        
         const totalPrice = order.items
             .reduce((acc, item) => acc + item.quantity * item.price, 0)
             .toFixed(2);
-        
+        const discountAndTaxPrice = order.totalPrice.toFixed(2);
+        const discountPrice = (totalPrice - order.totalPrice).toFixed(2);
         doc.setFontSize(14);
         doc.setFont('Helvetica', 'bold');
-        doc.text(`Total Price: Rs: ${totalPrice}`, 20, doc.autoTable.previous.finalY + 20);
-        
-        doc.save(`karma Invoice.pdf`);
+        const finalY = doc.autoTable.previous.finalY + 20;
+        doc.text(`Total Price: Rs: ${totalPrice}`, 20, finalY);
+        doc.text(`Discount + Tax Price: Rs ${discountAndTaxPrice}`, 20, finalY + 10);
+        doc.save('karma_invoice.pdf');
     }
     </script>
+    
+    
+    
 
 <!-- Cancel order -->
 <script>
@@ -463,7 +468,7 @@ document.getElementById('returnForm').addEventListener('submit', function(event)
                             });
 
                             if (updateResponse.data.success) {
-                                location.reload();
+                                window.location.href = `/order-success?orderId=${orderId}`;
                             } else {
                                 Swal.fire({
                                     title: 'Error',
@@ -505,6 +510,59 @@ document.getElementById('returnForm').addEventListener('submit', function(event)
         }
     }
 </script>
+
+<style>
+    .loading-spinner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    
+    .spinner-backdrop {
+        text-align: center;
+    }
+    .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #FF6C00; 
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .spinner-backdrop p {
+        color: white;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+    </style>
+    
+    <script>
+    function showSpinner() {
+        document.getElementById('loadingSpinner').style.display = 'flex';
+    }
+    function hideSpinner() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
+    document.getElementById('payNow').addEventListener('click', function () {
+        showSpinner();
+        setTimeout(function () {
+            hideSpinner();
+        }, 4000); 
+    });
+    
+    </script>
+
 
  
 

@@ -1,5 +1,6 @@
 const express = require("express");
 const user_route = express();
+const nocache = require("nocache");
 const UserController = require('../controllers/user/UserController');
 const cartController = require('../controllers/user/cartController');
 const orderController = require('../controllers/user/orderController');
@@ -13,13 +14,13 @@ const passport = require('passport')
 user_route.use(passport.initialize());
 user_route.use(passport.session());
 
-
 user_route.set('view engine', 'ejs');
 user_route.set('views', './views/user');
 
 const bodyParser = require('body-parser');
 user_route.use(bodyParser.json());
 user_route.use(bodyParser.urlencoded({ extended: true }));
+user_route.use(nocache())
 
 //Google auth
 user_route.get('/auth/google', passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -54,7 +55,7 @@ user_route.get('/cart', userAuth.isLogin, cartController.loadCart);
 user_route.post('/addcart', userAuth.isLogin, cartController.addToCart);
 user_route.post('/cart/decrement', userAuth.isLogin, cartController.decrementCart);
 user_route.post('/cart/increment', userAuth.isLogin, cartController.incrementCart);
-user_route.post('/cart/remove', userAuth.isLogin, cartController.removeFromCart);
+user_route.delete('/cart/remove', userAuth.isLogin, cartController.removeFromCart);
 
 //coupon
 user_route.get('/check-coupon', userAuth.isLogin, couponController.checkCoupon);
@@ -67,8 +68,8 @@ user_route.post('/checkout/add-new-address', userAuth.isLogin, cartController.ad
 user_route.get('/address', userAuth.isLogin, UserController.addressLoad);
 user_route.post('/addAddress', userAuth.isLogin, UserController.addAddress);
 user_route.get('/loadEditAddress', userAuth.isLogin, UserController.loadEditAddress);
-user_route.post('/editAddress', userAuth.isLogin, UserController.editAddress);
-user_route.post('/deleteAddress', userAuth.isLogin, UserController.deleteAddress);
+user_route.put('/editAddress', userAuth.isLogin, UserController.editAddress);
+user_route.delete('/deleteAddress', userAuth.isLogin, UserController.deleteAddress);
 
 
 //profile

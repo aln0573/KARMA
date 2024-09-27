@@ -319,17 +319,17 @@
           return;
         }
   
-        // AJAX request to check if the brand name already exists
+  
         $.ajax({
-          url: '/admin/editBrands', // Route to check the brand name
-          method: 'POST',
+          url: '/admin/editBrands', 
+          method: 'PUT',
           data: { id: brandsId, name: brandsName },
           success: function(response) {
             if (response.exists) {
               $('#nameValidationMsg').text('Brand name already exists.').show();
             } else {
               $('#nameValidationMsg').hide();
-              $('#editBrandsForm').unbind('submit').submit(); // Submit the form if validation passes
+              $('#editBrandsForm').unbind('submit').submit(); 
             }
           },
           error: function(xhr, status, error) {

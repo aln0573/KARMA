@@ -12,17 +12,18 @@ const admin_route = require("./routes/adminRoute");
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-    console.log("Connected to MongoDB");
-})
-.catch((error) => {
-    console.error("Error connecting to MongoDB:", error);
-});
+    .then(() => {
+        console.log("Connected to MongoDB");
+    })
+    .catch((error) => {
+        console.error("Error connecting to MongoDB:", error);
+    });
+
 
 // Middleware
 app.use("/static", express.static(path.join(__dirname, "public")));
 app.use(express.json());
-app.use('/admin/dashboard',nocache())
+app.use('/admin/dashboard', nocache())
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -34,6 +35,10 @@ app.use(session({
 // Routes
 app.use("/", user_route);
 app.use("/admin", admin_route);
+app.use((req, res, next) => {
+    res.status(404).render('404')
+});
+
 
 
 // Set view engine
@@ -41,7 +46,7 @@ app.set('view engine', 'ejs');
 app.set('views', './views/user');
 
 
- 
+
 // Start the server
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

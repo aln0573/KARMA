@@ -1,6 +1,13 @@
 <%- include("../layouts/header") %>
-<!-- Navbar -->
 <%- include("../layouts/nav") %>
+
+<!-- Spinner Modal -->
+<div id="loadingSpinner" class="loading-spinner" style="display: none;">
+    <div class="spinner-backdrop">
+        <div class="spinner"></div>
+        <p>Please wait...</p>
+    </div>
+</div>
 
 
 <!-- Address -->
@@ -346,6 +353,7 @@ function applyCoupon(couponId, couponCode) {
         });
 
         if (response.data.success) {
+            const oid = response.data.orderId
             if (selectedPaymentMethod === 'razorpay') {
                 var options = {
                     key: response.data.key,
@@ -357,7 +365,7 @@ function applyCoupon(couponId, couponCode) {
                     handler: function (response) {
                         if (response.razorpay_payment_id) {
                             console.log("Payment Successful: ", response);
-                            window.location.href = "/order-success";
+                            window.location.href = `/order-success?orderId=${oid}`;
                         } else {
                             window.location.href = "/order-failure";
                         }
@@ -391,7 +399,7 @@ function applyCoupon(couponId, couponCode) {
                     showConfirmButton: false,
                     timer: 2000
                 }).then(() => {
-                    window.location.href = '/order-success';
+                    window.location.href = `/order-success`;
                 });
             }
         } else {
@@ -627,5 +635,57 @@ function applyCoupon(couponId, couponCode) {
 }
 
 </style>
+
+<style>
+.loading-spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.spinner-backdrop {
+    text-align: center;
+}
+.spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #FF6C00; 
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.spinner-backdrop p {
+    color: white;
+    font-size: 16px;
+    margin-top: 10px;
+}
+</style>
+
+<script>
+function showSpinner() {
+    document.getElementById('loadingSpinner').style.display = 'flex';
+}
+function hideSpinner() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+}
+document.getElementById('placeOrderBtn').addEventListener('click', function () {
+    showSpinner();
+    setTimeout(function () {
+        hideSpinner();
+    }, 3000); 
+});
+
+</script>
 
 <%- include("../layouts/footer") %>

@@ -148,7 +148,7 @@ const decrementCart = async (req, res, next) => {
             res.json({ success: false, message: 'Quantity cannot be less than 1' });
         }
     } catch (error) {
-        next(error);
+        console.log(error)
     }
 }
 
