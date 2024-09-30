@@ -858,6 +858,51 @@ const handleResetPassword = async (req, res) => {
     }
 };
 
+const loadEditPassword = async (req, res) => {
+    try {
+        const userData = await userModel.findOne({ _id: req.session.user_id });
+        if (!userData) {
+            return res.status(404).render('404', { message: 'User not found.' });
+        }
+        res.render('editPassword', { user: userData });
+    } catch (error) {
+        console.log(error);
+        res.status(500).render('500', { message: 'Internal Server Error.' });
+    }
+};
+
+const changePassword = async (req, res) => {
+    try {
+        const userData = await userModel.findOne({ _id: req.session.user_id });
+        if (!userData) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ message: "All fields are required." });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: "New passwords do not match." });
+        }
+
+        const passwordMatch = await bcrypt.compare(currentPassword, userData.password);
+        if (!passwordMatch) {
+            return res.status(400).json({ message: "Entered old password is wrong." });
+        }
+        const hashedNewPassword = await hashPassword(newPassword);
+        userData.password = hashedNewPassword;
+        await userData.save();
+
+        return res.json({ success: true });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Internal Server Error." });
+    }
+};
+
+
+
 
 
 
@@ -887,5 +932,7 @@ module.exports = {
     sendPasswordLink,
     renderResetPasswordForm,
     handleResetPassword,
-    offerPrice
+    offerPrice,
+    loadEditPassword,
+    changePassword
 };

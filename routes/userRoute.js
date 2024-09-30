@@ -91,6 +91,8 @@ user_route.get('/forgot-password', userAuth.isLogout, UserController.loadForgetP
 user_route.post('/send-password-link', userAuth.isLogout, UserController.sendPasswordLink);
 user_route.get('/reset-password', UserController.renderResetPasswordForm);
 user_route.post('/reset-password', UserController.handleResetPassword);
+user_route.get('/edit-password', userAuth.isLogin, UserController.loadEditPassword);
+user_route.post('/change-password', userAuth.isLogin, UserController.changePassword);
 
 //wishlist
 user_route.get('/wishlist', userAuth.isLogin, wishlistController.wishlist);

@@ -1,7 +1,6 @@
 <%- include("../layouts/header") %>
 <%- include("../layouts/nav") %>
 <body>
-    <!--================Single Product Area =================-->
     <div class="product_image_area">
         <div class="container">
             <div class="row s_product_inner">
@@ -47,7 +46,6 @@
                         <p><%= product.productDec %></p>
                         <div class="card_area d-flex align-items-center">
                             <a class="primary-btn" href="#" data-product-id="<%= product._id %>" data-product-stock="<%= product.stock %>" onclick="addToCart('<%= product._id %>')">Add to Cart</a>
-                            <a class="icon_btn" href="#" style="padding: 13px;"><i class="lnr lnr-diamond"></i></a>
                             <a class="icon_btn" href="#" style="padding: 13px;" onclick="toggleWishlist('<%= product._id %>')" id="wishlist-button"><i class="lnr lnr-heart" id="wishlist-icon"></i></a>
                         </div>
                         
@@ -59,7 +57,6 @@
         </div>
     </div>
     <br><br><br><br>
-    <!--================End Single Product Area =================-->
 
     <%- include("../layouts/footer.ejs") %>
 
