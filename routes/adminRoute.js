@@ -19,7 +19,7 @@ admin_route.set('views', './views/admin');
 // Login Page
 admin_route.get('/login', adminController.adminLogin);
 admin_route.post('/login', adminAuth.isLogout, adminController.adminPostLogin);
-admin_route.get('/users', adminAuth, isLogin, adminController.loadUser);
+admin_route.get('/users', adminAuth.isLogin, adminController.loadUser);
 admin_route.patch('/blockUser', adminAuth.isLogin, adminController.blockUser);
 admin_route.patch('/unblockUser', adminAuth.isLogin, adminController.unblockUser);
 admin_route.get('/logout', adminAuth.isLogin, adminController.adminLogout);
