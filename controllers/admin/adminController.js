@@ -51,9 +51,9 @@ const blockUser = async (req, res, next) => {
         const id = req.query.id
         await userModel.updateOne({ _id: id }, { $set: { is_blocked: true } });
 
-        if (req.session.user_id && id === req.session.user_id) {
-            delete req.session.user_id
-        }
+        // if (req.session.user_id && id === req.session.user_id) {
+        //     delete req.session.user_id
+        // }
         res.json({ success: true });
     } catch (error) {
         next(error);

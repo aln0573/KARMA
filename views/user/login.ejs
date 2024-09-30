@@ -36,6 +36,7 @@
                     <div class="login_form_inner">
                         <h3>Log in to enter</h3>
                         <form action="/login" id="loginForm" class="row login_form" onsubmit="return validateForm()">
+                            <p class="text-danger"><%= locals.blockMessage ? blockMessage : '' %></p>
                             <div class="col-md-12 form-group">
                                 <input required type="email" class="form-control" id="email" name="email" placeholder="Email" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Email'">
                                 <span id="emailError" class="text-danger" style="display:none;">Email should not contain spaces</span>

@@ -124,7 +124,8 @@ const LoadLogin = async (req, res) => {
         if (req.session.user_id) {
             res.redirect('/');
         } else {
-            res.render('login');
+            const blockMessage = req.query.blockMessage ? req.query.blockMessage : '';
+            res.render('login', { blockMessage });
         }
     } catch (error) {
         console.log(error);
