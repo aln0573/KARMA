@@ -69,7 +69,7 @@ user_route.get('/address', userAuth.isLogin, UserController.addressLoad);
 user_route.post('/addAddress', userAuth.isLogin, UserController.addAddress);
 user_route.get('/loadEditAddress', userAuth.isLogin, UserController.loadEditAddress);
 user_route.put('/editAddress', userAuth.isLogin, UserController.editAddress);
-user_route.delete('/deleteAddress', userAuth.isLogin, UserController.deleteAddress);
+user_route.post('/deleteAddress', userAuth.isLogin, UserController.deleteAddress);
 
 
 //profile

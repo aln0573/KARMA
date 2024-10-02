@@ -56,6 +56,8 @@ const createOrder = async (req, res) => {
         const finalTotalPrice = req.body.totalprice;
         const userWallet = await walletModel.findOne({ userId });
 
+        console.log(userWallet)
+
         if (req.body.paymentMethod === "walletpay") {
             if (userWallet.balance >= finalTotalPrice) {
                 userWallet.balance -= finalTotalPrice;

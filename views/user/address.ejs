@@ -381,7 +381,7 @@
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axios.delete('/deleteAddress', { addressId })
+                        axios.post('/deleteAddress', { addressId })
                             .then(response => {
                                 Swal.fire(
                                     'Deleted!',
