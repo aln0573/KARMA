@@ -149,41 +149,39 @@ function addToCart(productId) {
             }
         });
 };
-
-
-            
-    // Toggle Wishlist Functionality
-function toggleWishlist(productId) {
-    axios.post('/wishlist/add', null, { params: { productId: productId } })
-        .then(function (response) {
-            const icon = document.getElementById('wishlist-icon');
-            if (response.data.success) {
-                icon.classList.toggle('lnr-heart');
-                icon.classList.toggle('lnr-heart-o');
-                Swal.fire({
-                    icon: 'success',
-                    title: response.data.message,
-                }).then(() => {
-                    window.location.href = '/wishlist';
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: response.data.message,
-                });
-            }
-        })
-        .catch(function (error) {
-            console.error('Error toggling wishlist:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to update wishlist.',
-            });
-        });
-}
-
     </script>
+    
+    
+	<script>
+        function toggleWishlist(productId) {
+axios.post('/wishlist/add', { productId: productId })
+.then(function (response) {
+    console.log(response.data);
+    window.location.href = '/wishlist';
+})
+.catch(function (error) {
+    console.error('Error adding to wishlist:', error);
+    if (error.response && error.response.status === 400) {
+        const errorMessage = error.response.data;
+
+         if (errorMessage === 'Product already exists in wishlist') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Product in wisshlist',
+                text: 'This product is already in your wishlist',
+            });
+        }
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'There was an issue adding the product to your cart.',
+        });
+    }
+});
+};
+
+</script>
 
 <style>
     * {box-sizing: border-box;}

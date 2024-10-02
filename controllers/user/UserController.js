@@ -121,11 +121,14 @@ const Loadhome = async (req, res) => {
 
 const LoadLogin = async (req, res) => {
     try {
+
         if (req.session.user_id) {
             res.redirect('/');
         } else {
+
             const blockMessage = req.query.blockMessage ? req.query.blockMessage : '';
-            res.render('login', { blockMessage });
+            return res.render('login', { blockMessage });
+
         }
     } catch (error) {
         console.log(error);

@@ -289,10 +289,11 @@
 								<span class="ti-bag"></span>
 								<p class="hover-text">Add to bag</p>
 							</a>
-							<a class="social-info" href="#" onclick="toggleWishlist('<%= product._id %>')" id="wishlist-button">
-							<span class="lnr lnr-heart"></span>
-							<p class="hover-text">Wishlist</p>
-						  </a>
+							<a class="social-info"  onclick="toggleWishlist('<%= product._id %>')" id="wishlist-button-<%= product._id %>">
+								<span class="lnr lnr-heart" id="wishlist-icon-<%= product._id %>"></span>
+								<p class="hover-text">Wishlist</p>
+							</a>
+							
 						</div>
 					  </div>
 					</div>
@@ -368,34 +369,40 @@
         });
 };
 
-function toggleWishlist(productId) {
-    axios.post('/wishlist/add', null, { params: { productId: productId } })
-        .then(function (response) {
-            const icon = document.getElementById('lnr lnr-heart');
-            if (response.data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: response.data.message,
-                }).then(() => {
-                    window.location.href = '/wishlist';
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: response.data.message,
-                });
-            }
-        })
-        .catch(function (error) {
-            console.error('Error toggling wishlist:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to update wishlist.',
-            });
-        });
-}
  
 	</script>
+
+	<script>
+				function toggleWishlist(productId) {
+    axios.post('/wishlist/add', { productId: productId })
+        .then(function (response) {
+            console.log(response.data);
+            window.location.href = '/wishlist';
+        })
+        .catch(function (error) {
+            console.error('Error adding to wishlist:', error);
+            if (error.response && error.response.status === 400) {
+                const errorMessage = error.response.data;
+  
+                 if (errorMessage === 'Product already exists in wishlist') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Product in wisshlist',
+                        text: 'This product is already in your wishlist',
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'There was an issue adding the product to your cart.',
+                });
+            }
+        });
+};
+
+	</script>
+
+ 
 	
 <%- include("../layouts/footer") %>
