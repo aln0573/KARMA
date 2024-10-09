@@ -41,7 +41,8 @@
                                         <td><%= coupon.couponCode %></td>
                                         <td><%= coupon.percentage %> %</td>
                                         <td>₹<%= coupon.minPrice %></td>
-                                        <td><%= coupon.expiryDate.toLocaleDateString() %></td>
+                                        <td><%= coupon.expiryDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></td>
+
                                         <td>₹<%= coupon.maxRedeemAmount %></td>
                                         <td>
                                             <button 

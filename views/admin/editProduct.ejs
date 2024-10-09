@@ -33,9 +33,10 @@
                   </div>
                   <div class="col-md-4">
                     <label for="quantity">Stock</label>
-                    <input type="number" class="form-control" id="quantity" placeholder="Quantity" min="0" name="quantity" value="<%= productData.stock %>">
+                    <input type="number" class="form-control" id="quantity" placeholder="Quantity" min="0" name="quantity" value="<%= productData.stock %>" required>
                     <small id="stockError" class="text-danger"></small>
-                  </div>
+                </div>
+                  
                 </div>
                 
                 <div class="form-group">
@@ -62,10 +63,10 @@
 
                 <div class="col-md-4">
                   <label for="price">Price</label>
-                  <input type="number" class="form-control" id="price" placeholder="Price" name="price" step="0.01" min="0" value="<%= productData.price %>">
+                  <input type="number" class="form-control" id="price" placeholder="Price" name="price" min="0" value="<%= productData.price %>">
                   <small id="priceError" class="text-danger"></small>
                 </div>
-
+                
                 <div class="form-group">
                   <label for="gender">Gender</label>
                   <select class="form-control" id="gender" name="gender">
@@ -98,6 +99,7 @@
                         <input type="file" class="image-upload-input" id="image1" name="image1" accept="image/*">
                         <img id="preview1" src="/productimages/<%= productData.image[0] %>" alt="Preview" style="width: 100px; height: auto;">
                         <input type="hidden" name="existingImage1" value="<%= productData.image[0] %>">
+                        <small id="imageError1" class="text-danger"></small>
                       </div>
                     </div>
                     <div class="col-md-4">
@@ -111,6 +113,8 @@
                         <input type="file" class="image-upload-input" id="image2" name="image2" accept="image/*">
                         <img id="preview2" src="/productimages/<%= productData.image[1] %>" alt="Preview" style="width: 100px; height: auto;">
                         <input type="hidden" name="existingImage2" value="<%= productData.image[1] %>">
+                        <small id="imageError2" class="text-danger"></small>
+
                       </div>
                     </div>
                     <div class="col-md-4">
@@ -124,6 +128,7 @@
                         <input type="file" class="image-upload-input" id="image3" name="image3" accept="image/*">
                         <img id="preview3" src="/productimages/<%= productData.image[2] %>" alt="Preview" style="width: 100px; height: auto;">
                         <input type="hidden" name="existingImage3" value="<%= productData.image[2] %>">
+                        <small id="imageError3" class="text-danger"></small>
                       </div>
                     </div>
                   </div>
@@ -145,6 +150,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Cropper Modal -->
 <div class="modal fade" id="cropperModal" tabindex="-1" role="dialog" aria-labelledby="cropperModalLabel" aria-hidden="true">
@@ -174,13 +180,23 @@
   document.addEventListener('DOMContentLoaded', () => {
     const productNameInput = document.getElementById('productName');
     const productNameError = document.getElementById('productNameError');
+    const priceInput = document.getElementById('price');
+    const priceError = document.getElementById('priceError');
+    const stockInput = document.getElementById('quantity');
+    const stockError = document.getElementById('stockError');
+
+    const form = document.getElementById('productForm');
+    const saveChangesButton = document.getElementById('saveChangesButton');
+    let cropper;
+    const imageInputs = document.querySelectorAll('.image-upload-input');
+    const modalImage = document.getElementById('modalImage');
+    const cropButton = document.getElementById('cropButton');
+    const cropperModal = $('#cropperModal');
+    let currentInput = null;
 
     // Real-time validation for product name
     productNameInput.addEventListener('input', () => {
-      // Remove dots, slashes, stars, minus, plus, and other special characters
       const cleanedValue = productNameInput.value.replace(/[./*+-]/g, '');
-
-      // Check if the cleaned value is different from the original input
       if (productNameInput.value !== cleanedValue) {
         productNameInput.value = cleanedValue;
         productNameError.textContent = 'Product name cannot contain dots, slashes, stars, minus, or plus symbols.';
@@ -192,10 +208,22 @@
       }
     });
 
-    // Form submit validation
-    const form = document.getElementById('productForm');
-    form.addEventListener('submit', (event) => {
+    // Real-time validation for stock
+    stockInput.addEventListener('input', () => {
+      if (stockInput.value < 0) {
+        stockError.textContent = 'Stock cannot be negative.';
+        stockInput.value = '';  // Clear the input if it's negative
+      } else {
+        stockError.textContent = '';  // Clear the error message if valid
+      }
+    });
+
+    // Function to validate form fields
+    function validateForm() {
       let valid = true;
+      productNameError.textContent = '';
+      priceError.textContent = '';
+      stockError.textContent = '';
 
       // Product Name Validation
       const productName = productNameInput.value.trim();
@@ -205,50 +233,34 @@
       } else if (productName.startsWith(' ')) {
         productNameError.textContent = 'Product name cannot start with a space.';
         valid = false;
-      } else {
-        productNameError.textContent = '';
       }
 
-      if (!valid) {
-        event.preventDefault(); // Prevent form submission if invalid
-      }
-    });
-  });
-</script>
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
- 
-
-    // Validate price
-    priceInput.addEventListener('input', () => {
-      const value = priceInput.value;
-      // Remove invalid characters
-      const cleanedValue = value.replace(/[^0-9.]/g, '');
-      if (value !== cleanedValue) {
-        priceInput.value = cleanedValue;
-        priceError.textContent = 'Price should be a non-negative number.';
-      } else {
-        priceError.textContent = '';
-      }
-    });
-
-    document.getElementById('saveChangesButton').addEventListener('click', async () => {
-      const formData = new FormData(document.getElementById('productForm'));
- 
-
-      // Check price
-      if (isNaN(price) || price < 0) {
-        priceError.textContent = 'Price should be a non-negative number.';
+      // Price Validation
+      const priceValue = parseFloat(priceInput.value);
+      if (isNaN(priceValue) || priceValue < 0) {
+        priceError.textContent = 'Please enter a valid price (must be a positive number).';
         valid = false;
       }
 
-      if (!valid) {
-        return; // Prevent form submission if invalid
+      // Stock Validation
+      const stockValue = parseInt(stockInput.value, 10);
+      if (isNaN(stockValue) || stockValue < 0) {
+        stockError.textContent = 'Stock cannot be negative.';
+        valid = false;
       }
 
-      // Form is valid, append cropped images if any
+      return valid;
+    }
+
+    // Save Changes button click event
+    saveChangesButton.addEventListener('click', async () => {
+      if (!validateForm()) {
+        return; // Prevent form submission if validation fails
+      }
+
+      const formData = new FormData(form);
+
+      // Append cropped images to formData
       imageInputs.forEach((input, index) => {
         if (input.getAttribute('data-cropped-image')) {
           const dataUrl = input.getAttribute('data-cropped-image');
@@ -265,34 +277,16 @@
       if (response.ok) {
         window.location.href = '/admin/products';
       } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Please select an image',
+        });
         console.error('Failed to update product');
       }
     });
 
-    function dataURItoBlob(dataURI) {
-      const byteString = atob(dataURI.split(',')[1]);
-      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-      return new Blob([ab], { type: mimeString });
-    }
-  });
-</script>
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    let cropper;
-    const imageInputs = document.querySelectorAll('.image-upload-input');
-    const previewImages = document.querySelectorAll('.image-upload-wrapper img');
-    const modalImage = document.getElementById('modalImage');
-    const cropButton = document.getElementById('cropButton');
-    const cropperModal = $('#cropperModal');
-    let currentInput = null;
-  
+    // Cropper.js logic for image cropping
     imageInputs.forEach((input) => {
       input.addEventListener('change', (event) => {
         const file = event.target.files[0];
@@ -315,23 +309,7 @@
         }
       });
     });
-  
-    previewImages.forEach((img) => {
-      img.addEventListener('click', () => {
-        const imageUrl = img.src;
-        modalImage.src = imageUrl;
-        cropperModal.modal('show');
-        if (cropper) {
-          cropper.destroy();
-        }
-        cropper = new Cropper(modalImage, {
-          aspectRatio: 1,
-          viewMode: 1,
-          autoCropArea: 1,
-        });
-      });
-    });
-  
+
     cropButton.addEventListener('click', () => {
       if (cropper) {
         const canvas = cropper.getCroppedCanvas();
@@ -346,31 +324,7 @@
         cropperModal.modal('hide');
       }
     });
-  
-    document.getElementById('saveChangesButton').addEventListener('click', async () => {
-      const formData = new FormData(document.getElementById('productForm'));
-  
-      // Append cropped images to formData
-      imageInputs.forEach((input, index) => {
-        if (input.getAttribute('data-cropped-image')) {
-          const dataUrl = input.getAttribute('data-cropped-image');
-          const blob = dataURItoBlob(dataUrl);
-          formData.append(`image${index + 1}`, blob, `cropped_image${index + 1}.png`);
-        }
-      });
-  
-      const response = await fetch(`/admin/editProducts/?id=<%= productData._id %>`, {
-        method: 'POST',
-        body: formData,
-      });
-  
-      if (response.ok) {
-        window.location.href = '/admin/products';
-      } else {
-        console.error('Failed to update product');
-      }
-    });
-  
+
     function dataURItoBlob(dataURI) {
       const byteString = atob(dataURI.split(',')[1]);
       const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
