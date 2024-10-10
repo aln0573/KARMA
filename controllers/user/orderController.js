@@ -19,6 +19,7 @@ const razorpayInstance = new Razorpay({
 
 const createOrder = async (req, res) => {
     try {
+        console.log(req.body)
         const userId = req.session.user_id;
         if (!userId) {
             return res.status(401).json({ success: false, message: "Unauthorized user" });
@@ -54,9 +55,8 @@ const createOrder = async (req, res) => {
         }
 
         const finalTotalPrice = req.body.totalprice;
+        console.log(typeof (finalTotalPrice))
         const userWallet = await walletModel.findOne({ userId });
-
-        console.log(userWallet)
 
         if (req.body.paymentMethod === "walletpay") {
             if (userWallet.balance >= finalTotalPrice) {
